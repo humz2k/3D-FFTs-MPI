@@ -9,12 +9,36 @@
 //
 #include <mpi.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+void id2xyz(int id, int Ng, int* out){
+
+  out[0] = id / (Ng*Ng);
+  out[1] = (id - out[0]*(Ng*Ng)) / Ng;
+  out[2] = id - out[0]*(Ng*Ng) - out[1]*(Ng);
+
+}
 
 int main(int argc, char** argv) {
   // Initialize the MPI environment. The two arguments to MPI Init are not
   // currently used by MPI implementations, but are there in case future
   // implementations might need the arguments.
   MPI_Init(NULL, NULL);
+
+  int topology[3];
+
+  topology[0] = 2;
+  topology[1] = 2;
+  topology[2] = 2;
+
+  int Ng = 8;
+
+  int grid_top[3];
+  grid_top[0] = Ng / topology[0];
+  grid_top[1] = Ng / topology[1];
+  grid_top[2] = Ng / topology[2];
+
+  int myNg = grid_top[0] * grid_top[1] * grid_top[2];
 
   // Get the number of processes
   int world_size;
@@ -29,10 +53,81 @@ int main(int argc, char** argv) {
   int name_len;
   MPI_Get_processor_name(processor_name, &name_len);
 
-  // Print off a hello world message
-  printf("Hello world from processor %s, rank %d out of %d processors\n",
-         processor_name, world_rank, world_size);
+  int coordinates[3];
 
+  coordinates[0] = world_rank / (topology[1] * topology[2]);
+  coordinates[1] = (world_rank - coordinates[0] * (topology[1] * topology[2])) / topology[2];
+  coordinates[2] = world_rank - coordinates[0] * (topology[1] * topology[2]) - coordinates[1] * topology[2];
+
+  // Print off a hello world message
+
+  int grid_start[3];
+  grid_start[0] = grid_top[0] * coordinates[0];
+  grid_start[1] = grid_top[1] * coordinates[1];
+  grid_start[2] = grid_top[2] * coordinates[2];
+
+  char name[] = "proc0";
+  char c = world_rank + '0';
+  name[4] = c;
+
+  FILE *out_file = fopen(name, "w");
+
+  fprintf(out_file,"Processor %d, coords [%d,%d,%d]\n",
+         world_rank, coordinates[0], coordinates[1], coordinates[2]);    
+
+  int *xyz = (int*) malloc(3 * sizeof(int));
+
+  int *my_data = (int*) malloc(myNg * sizeof(int));
+
+  int count = 0;
+
+  for (int i = 0; i < grid_top[0]; i++){
+    for (int j = 0; j < grid_top[1]; j++){
+      for (int k = 0; k < grid_top[2]; k++){
+
+        int id = (i + grid_start[0]) * Ng * Ng + (j + grid_start[1])*Ng + k + grid_start[2];
+
+        my_data[count] = id;
+
+        //id2xyz(id,Ng,xyz);
+
+        //fprintf(out_file,"%d,%d,%d\n",xyz[0],xyz[1],xyz[2]);
+
+        count++;
+
+      }
+    }
+  }
+
+  fprintf(out_file,"step0\n");   
+
+  for (int i = 0; i < myNg; i++){
+
+    int id = my_data[i];
+
+    id2xyz(id,Ng,xyz);
+
+    fprintf(out_file,"%d,%d,%d\n",xyz[0],xyz[1],xyz[2]);
+
+  }
+
+  fprintf(out_file,"step1\n");   
+
+  for (int i = 0; i < myNg; i++){
+
+    int id = my_data[i];
+
+    id2xyz(id,Ng,xyz);
+
+    fprintf(out_file,"%d,%d,%d\n",xyz[0],xyz[1],xyz[2]);
+
+  }
+
+  free(xyz);
+
+  fclose(out_file);
+
+  free(my_data);
   // Finalize the MPI environment. No more MPI calls can be made after this
   MPI_Finalize();
 }
