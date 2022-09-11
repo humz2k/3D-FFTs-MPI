@@ -27,23 +27,14 @@ for i in range(n_procs):
 
         lines = lines[1:][my_grid_points:]
 
+temp = procs[0]["step1"].reshape(((Ng*Ng)//n_procs),Ng,3)
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 
-for idx,proc in enumerate(procs):
-    coords = proc["step2"]
-    xs = coords[:,0]
-    ys = coords[:,1]
-    zs = coords[:,2]
+for i in temp:
 
-    ax.scatter(xs,ys,zs,label=str(idx))
+    color = (i[:,0][0]/7,1-i[:,1][0]/7,0)
+    print(color)
 
-ax.set_xlabel("x")
-ax.set_ylabel("y")
-ax.set_zlabel("z")
-
-plt.legend()
-
+    ax.plot(i[:,0],i[:,1],i[:,2],color=color)
 plt.show()
-
-    

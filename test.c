@@ -111,6 +111,30 @@ int main(int argc, char** argv) {
 
   }
 
+  MPI_Alltoall(my_data,8,MPI_INT,my_data,8,MPI_INT,MPI_COMM_WORLD);
+
+  int n_pencils = (Ng * Ng)/world_size;
+
+  printf("n_pencils %d\n",n_pencils);
+
+  int depth = Ng;
+  
+  for (int i = 0; i < n_pencils; i+=2){
+
+    int pencil_start = i*depth;
+    int swap1 = pencil_start + depth/2;
+    int swap2 = pencil_start + depth;
+    
+    for (int j = 0; j < depth/2; j++){
+
+      int temp = my_data[swap1 + j];
+      my_data[swap1 + j] = my_data[swap2 + j];
+      my_data[swap2 + j] = temp;
+
+    }
+
+  }
+
   fprintf(out_file,"step1\n");   
 
   for (int i = 0; i < myNg; i++){
@@ -123,11 +147,45 @@ int main(int argc, char** argv) {
 
   }
 
+
+
+  int send_counts_one[8] = {4,4,4,4,4,4,4,4};
+  int send_disp_one[8] = {0,4,8,12,16,20,24,28};
+
+  int send_counts_two[8] = {4,4,4,4,4,4,4,4};
+  int send_disp_two[8] = {0+32,4+32,8+32,12+32,16+32,20+32,24+32,28+32};
+
+  int *my_data2 = (int*) malloc(myNg * sizeof(int));
+
+  MPI_Alltoallv(my_data,send_counts_one,send_disp_one,MPI_INT,my_data2,send_counts_one,send_disp_one,MPI_INT,MPI_COMM_WORLD);
+
+  MPI_Alltoallv(my_data,send_counts_two,send_disp_two,MPI_INT,my_data2,send_counts_two,send_disp_two,MPI_INT,MPI_COMM_WORLD);
+
+  //MPI_Alltoallv((my_data+4),send_counts_two,send_disp_two,MPI_INT,my_data,send_counts_two,send_disp_two,MPI_INT,MPI_COMM_WORLD);
+
+  //MPI_Alltoall(my_data,8,MPI_INT,my_data,8,MPI_INT,MPI_COMM_WORLD);
+  //MPI_Alltoall(my_data,8,MPI_INT,my_data,4,MPI_INT,MPI_COMM_WORLD);
+  //MPI_Alltoall((my_data + myNg/2),4,MPI_INT,(my_data + myNg/2),4,MPI_INT,MPI_COMM_WORLD);
+
+
+  fprintf(out_file,"step2\n");   
+
+  for (int i = 0; i < myNg; i++){
+
+    int id = my_data2[i];
+
+    id2xyz(id,Ng,xyz);
+
+    fprintf(out_file,"%d,%d,%d\n",xyz[0],xyz[1],xyz[2]);
+
+  }
+
   free(xyz);
 
   fclose(out_file);
 
   free(my_data);
+  free(my_data2);
   // Finalize the MPI environment. No more MPI calls can be made after this
   MPI_Finalize();
 }
