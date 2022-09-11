@@ -161,12 +161,6 @@ int main(int argc, char** argv) {
 
   MPI_Alltoallv(my_data,send_counts_two,send_disp_two,MPI_INT,my_data2,send_counts_two,send_disp_two,MPI_INT,MPI_COMM_WORLD);
 
-  //MPI_Alltoallv((my_data+4),send_counts_two,send_disp_two,MPI_INT,my_data,send_counts_two,send_disp_two,MPI_INT,MPI_COMM_WORLD);
-
-  //MPI_Alltoall(my_data,8,MPI_INT,my_data,8,MPI_INT,MPI_COMM_WORLD);
-  //MPI_Alltoall(my_data,8,MPI_INT,my_data,4,MPI_INT,MPI_COMM_WORLD);
-  //MPI_Alltoall((my_data + myNg/2),4,MPI_INT,(my_data + myNg/2),4,MPI_INT,MPI_COMM_WORLD);
-
 
   fprintf(out_file,"step2\n");   
 
