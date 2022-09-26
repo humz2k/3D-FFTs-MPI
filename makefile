@@ -1,5 +1,7 @@
 thing:
 	mpicc test.c -o test
 
+NPROC := 8
+
 run:
-	mpirun -n 8 ./test
+	mpirun -n $(NPROC) ./test
