@@ -109,6 +109,20 @@ int main(int argc, char** argv) {
 
     }
 
+    MPI_Alltoall(myGridCells,8,MPI_INT,myGridCells,8,MPI_INT,MPI_COMM_WORLD);
+
+    fprintf(out_file,"step1\n");
+
+    for (int i = 0; i < nlocal; i++){
+
+        int id = myGridCells[i];
+
+        gridID2xyz(id,Ng,xyz);
+
+        fprintf(out_file,"%d,%d,%d\n",xyz[0],xyz[1],xyz[2]);
+
+    }
+
     //printf("%d: [%d,%d,%d], %d\n",world_rank,local_coordinates_start[0],local_coordinates_start[1],local_coordinates_start[2], nlocal);
 
     free(myGridCells);

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-n_procs = 10
+n_procs = 8
 Ng = 8
 n_grid_points = Ng*Ng*Ng
 
@@ -31,12 +31,12 @@ fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 
 for idx,proc in enumerate(procs):
-    coords = proc["step0"]
+    coords = proc["step1"]
     xs = coords[:,0]
     ys = coords[:,1]
     zs = coords[:,2]
 
-    ax.plot(xs,ys,zs,label=str(idx))
+    ax.scatter(xs,ys,zs,label=str(idx))
 
 ax.set_xlabel("x")
 ax.set_ylabel("y")
