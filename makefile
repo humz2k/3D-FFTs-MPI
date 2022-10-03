@@ -1,5 +1,5 @@
 thing:
-	mpicc test.c -o test
+	mpicc test.c helpers/helpers.c -o test
 
 NPROC := 8
 

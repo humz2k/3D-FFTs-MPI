@@ -31,7 +31,7 @@ fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 
 for idx,proc in enumerate(procs):
-    coords = proc["step1"]
+    coords = proc["step0"]
     xs = coords[:,0]
     ys = coords[:,1]
     zs = coords[:,2]
