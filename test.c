@@ -84,8 +84,6 @@ int main(int argc, char** argv) {
     int* myGridCells = (int*) malloc(nlocal * sizeof(int));
     init_grid_cells(world_rank,local_coordinates_start,local_grid_size,myGridCells,Ng);
 
-
-
     char name[] = "proc0";
     char c = world_rank + '0';
     name[4] = c;
