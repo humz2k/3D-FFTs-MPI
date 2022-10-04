@@ -38,23 +38,23 @@ void transpose_1(int* source, int* dest, int* local_grid_size){
     }
 }
 
-void transpose_2(int* source, int* dest, int dim){
+void transpose_2(int* source, int* dest, int* local_grid_size){
 
-    for (int i = 0; i < dim; i++){
-        for (int j = 0; j < dim; j++){
-            for (int k = 0; k < dim; k++){
-                dest[i*dim*dim + j*dim + k] = source[j*dim*dim + k*dim + i];
+    for (int i = 0; i < local_grid_size[0]; i++){
+        for (int j = 0; j < local_grid_size[2]; j++){
+            for (int k = 0; k < local_grid_size[1]; k++){
+                dest[i*local_grid_size[2]*local_grid_size[1] + j*local_grid_size[1] + k] = source[j*local_grid_size[0]*local_grid_size[1] + k*local_grid_size[0] + i];
             }
         }
     }
 }
 
-void transpose_3(int* source, int* dest, int dim){
+void transpose_3(int* source, int* dest, int* local_grid_size){
 
-    for (int i = 0; i < dim; i++){
-        for (int j = 0; j < dim; j++){
-            for (int k = 0; k < dim; k++){
-                dest[i*dim*dim + j*dim + k] = source[i*dim*dim + k*dim + j];
+    for (int i = 0; i < local_grid_size[0]; i++){
+        for (int j = 0; j < local_grid_size[1]; j++){
+            for (int k = 0; k < local_grid_size[2]; k++){
+                dest[i*local_grid_size[1]*local_grid_size[2] + j*local_grid_size[2] + k] = source[i*local_grid_size[1]*local_grid_size[2] + k*local_grid_size[1] + j];
             }
         }
     }
@@ -99,7 +99,9 @@ int main(int argc, char** argv) {
 
     save(out_file,0,xyz,Ng,nlocal,myGridCells);
 
-    int nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
+    int nsends;
+
+    nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
 
     MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
     copy(myGridCellsTemp,myGridCells,nlocal);
@@ -116,16 +118,16 @@ int main(int argc, char** argv) {
     save(out_file,3,xyz,Ng,nlocal,myGridCells);
 
     MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
-    //fix this
-    transpose_2(myGridCellsTemp,myGridCells,local_grid_size[0]);
+    transpose_2(myGridCellsTemp,myGridCells,local_grid_size);
     save(out_file,4,xyz,Ng,nlocal,myGridCells);
 
-    MPI_Alltoall(myGridCells,Ng,MPI_INT,myGridCellsTemp,Ng,MPI_INT,MPI_COMM_WORLD);
+    nsends = ((local_grid_size[2] * local_grid_size[0])/world_size) * local_grid_size[1];
+    MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
     copy(myGridCellsTemp,myGridCells,nlocal);
     save(out_file,5,xyz,Ng,nlocal,myGridCells);
 
-    MPI_Alltoall(myGridCells,Ng,MPI_INT,myGridCellsTemp,Ng,MPI_INT,MPI_COMM_WORLD);
-    transpose_3(myGridCellsTemp,myGridCells,local_grid_size[0]);
+    MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
+    transpose_3(myGridCellsTemp,myGridCells,local_grid_size);
     save(out_file,6,xyz,Ng,nlocal,myGridCells);
 
     free(myGridCells);
