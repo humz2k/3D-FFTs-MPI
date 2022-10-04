@@ -27,12 +27,12 @@ void copy(int* source, int* dest, int len){
 
 }
 
-void transpose_1(int* source, int* dest, int dim){
+void transpose_1(int* source, int* dest, int* local_grid_size){
 
-    for (int i = 0; i < dim; i++){
-        for (int j = 0; j < dim; j++){
-            for (int k = 0; k < dim; k++){
-                dest[i*dim*dim + j*dim + k] = source[k*dim*dim + j*dim + i];
+    for (int i = 0; i < local_grid_size[2]; i++){
+        for (int j = 0; j < local_grid_size[1]; j++){
+            for (int k = 0; k < local_grid_size[0]; k++){
+                dest[i*local_grid_size[1]*local_grid_size[0] + j*local_grid_size[0] + k] = source[k*local_grid_size[1]*local_grid_size[2] + j*local_grid_size[2] + i];
             }
         }
     }
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     MPI_Init(NULL, NULL);
 
     int ndims = 3;
-    int Ng = 8;
+    int Ng = 12;
     
     //get MPI world rank and size
     int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -100,22 +100,23 @@ int main(int argc, char** argv) {
     save(out_file,0,xyz,Ng,nlocal,myGridCells);
 
     int nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
+
     MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
     copy(myGridCellsTemp,myGridCells,nlocal);
     save(out_file,1,xyz,Ng,nlocal,myGridCells);
 
     MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
 
-    //FIX THIS
-    transpose_1(myGridCellsTemp,myGridCells,local_grid_size[0]);
+    transpose_1(myGridCellsTemp,myGridCells,local_grid_size);
     save(out_file,2,xyz,Ng,nlocal,myGridCells);
 
-    //CHANGE SEND COUNTS
-    MPI_Alltoall(myGridCells,Ng,MPI_INT,myGridCellsTemp,Ng,MPI_INT,MPI_COMM_WORLD);
+    nsends = ((local_grid_size[2] * local_grid_size[1])/world_size) * local_grid_size[0];
+    MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
     copy(myGridCellsTemp,myGridCells,nlocal);
     save(out_file,3,xyz,Ng,nlocal,myGridCells);
 
-    MPI_Alltoall(myGridCells,Ng,MPI_INT,myGridCellsTemp,Ng,MPI_INT,MPI_COMM_WORLD);
+    MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
+    //fix this
     transpose_2(myGridCellsTemp,myGridCells,local_grid_size[0]);
     save(out_file,4,xyz,Ng,nlocal,myGridCells);
 
