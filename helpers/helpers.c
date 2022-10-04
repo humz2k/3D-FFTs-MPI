@@ -22,7 +22,7 @@ void grid2top(int Ng, int* dims, int* grid_size){
 
     grid_size[0] = Ng / dims[0];
     grid_size[1] = Ng / dims[1];
-    grid_size[2] = Ng / dims[1];
+    grid_size[2] = Ng / dims[2];
 
 }
 

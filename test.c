@@ -70,13 +70,20 @@ int main(int argc, char** argv) {
     //get MPI world rank and size
     int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     int world_rank; MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
     //get info about dimensions/local grid size
     int dims[3] = {0,0,0}; MPI_Dims_create(world_size,ndims,dims);
+
+    printf("DIMS [%d,%d,%d]\n",dims[0],dims[1],dims[2]);
+
     int coords[3] = {0,0,0}; id2coords(world_rank,dims,coords);
     int local_grid_size[3] = {0,0,0}; grid2top(Ng,dims,local_grid_size);
+
+    printf("LOCAL_GRID_SIZE [%d,%d,%d]\n",local_grid_size[0],local_grid_size[1],local_grid_size[2]);
+    
     int local_coordinates_start[3] = {0,0,0}; get_local_start(local_grid_size,coords,local_coordinates_start);
     int nlocal = local_grid_size[0] * local_grid_size[1] * local_grid_size[2];
+
+    printf("NLOCAL: %d\n",nlocal);
 
     //initialize grid
     int* myGridCells = (int*) malloc(nlocal * sizeof(int)); 
@@ -92,14 +99,18 @@ int main(int argc, char** argv) {
 
     save(out_file,0,xyz,Ng,nlocal,myGridCells);
 
-    MPI_Alltoall(myGridCells,Ng,MPI_INT,myGridCellsTemp,Ng,MPI_INT,MPI_COMM_WORLD);
+    int nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
+    MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
     copy(myGridCellsTemp,myGridCells,nlocal);
     save(out_file,1,xyz,Ng,nlocal,myGridCells);
 
-    MPI_Alltoall(myGridCells,Ng,MPI_INT,myGridCellsTemp,Ng,MPI_INT,MPI_COMM_WORLD);
+    MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
+
+    //FIX THIS
     transpose_1(myGridCellsTemp,myGridCells,local_grid_size[0]);
     save(out_file,2,xyz,Ng,nlocal,myGridCells);
 
+    //CHANGE SEND COUNTS
     MPI_Alltoall(myGridCells,Ng,MPI_INT,myGridCellsTemp,Ng,MPI_INT,MPI_COMM_WORLD);
     copy(myGridCellsTemp,myGridCells,nlocal);
     save(out_file,3,xyz,Ng,nlocal,myGridCells);

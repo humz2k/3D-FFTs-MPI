@@ -7,6 +7,8 @@ n_grid_points = Ng*Ng*Ng
 
 my_grid_points = int(n_grid_points / n_procs)
 
+#print(n_grid_points / n_procs)
+
 print(my_grid_points)
 
 procs = []
@@ -26,12 +28,14 @@ for i in range(n_procs):
         procs[i][lines[0]] = np.array([[int(j) for j in i.split(",")] for i in step])
 
         lines = lines[1:][my_grid_points:]
+    
+print(procs)
 
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 
 for idx,proc in enumerate(procs):
-    coords = proc["step0"]
+    coords = proc["step3"]
     xs = coords[:,0]
     ys = coords[:,1]
     zs = coords[:,2]
