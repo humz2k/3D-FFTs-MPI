@@ -31,23 +31,27 @@ for i in range(n_procs):
     
 print(procs)
 
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
+steps = ["step0","step1","step2","step3","step4","step5","step6"]
 
-for idx,proc in enumerate(procs):
-    coords = proc["step0"]
-    xs = coords[:,0]
-    ys = coords[:,1]
-    zs = coords[:,2]
+for step in steps:
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
 
-    ax.scatter(xs,ys,zs,label=str(idx))
+    for idx,proc in enumerate(procs):
+        coords = proc[step]
+        xs = coords[:,0]
+        ys = coords[:,1]
+        zs = coords[:,2]
 
-ax.set_xlabel("x")
-ax.set_ylabel("y")
-ax.set_zlabel("z")
+        ax.scatter(xs,ys,zs,label=str(idx))
 
-plt.legend()
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
 
-plt.show()
+    plt.legend()
+
+    plt.savefig(step + ".jpg")
+    plt.close()
 
     
