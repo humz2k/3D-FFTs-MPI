@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-n_procs = 6
-Ng = 12
+n_procs = 8
+Ng = 8
 n_grid_points = Ng*Ng*Ng
 
 my_grid_points = int(n_grid_points / n_procs)
@@ -37,7 +37,7 @@ for step in steps:
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
 
-    for idx,proc in enumerate(procs):
+    for idx,proc in enumerate(procs[:1]):
         coords = proc[step]
         xs = coords[:,0]
         ys = coords[:,1]
@@ -48,6 +48,10 @@ for step in steps:
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
+
+    ax.set_xlim(0,Ng)
+    ax.set_ylim(0,Ng)
+    ax.set_zlim(0,Ng)
 
     plt.legend()
 

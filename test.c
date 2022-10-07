@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     MPI_Init(NULL, NULL);
 
     int ndims = 3;
-    int Ng = 12;
+    int Ng = 8;
     
     //get MPI world rank and size
     int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);
