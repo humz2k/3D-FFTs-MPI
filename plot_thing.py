@@ -28,22 +28,21 @@ for i in range(n_procs):
         procs[i][lines[0]] = np.array([[int(j) for j in i.split(",")] for i in step])
 
         lines = lines[1:][my_grid_points:]
-    
-print(procs)
 
-steps = ["step0","step1","step2","step3","step4","step5","step6"]
+steps = ["step0","step1","step2","step3","step4","step5","step6","step7","step8","step9","step10"]
 
 for step in steps:
+    print("AHH")
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
 
-    for idx,proc in enumerate(procs[:1]):
+    for idx,proc in enumerate(procs[0:1]):
         coords = proc[step]
         xs = coords[:,0]
         ys = coords[:,1]
         zs = coords[:,2]
 
-        ax.scatter(xs,ys,zs,label=str(idx))
+        ax.plot(xs,ys,zs,label=str(idx))
 
     ax.set_xlabel("x")
     ax.set_ylabel("y")
