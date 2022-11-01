@@ -4,33 +4,23 @@
 #include "helpers/helpers.h"
 
 void save(FILE* out_file, int step, int* xyz, int Ng, int nlocal, int* myGridCells){
-
     fprintf(out_file,"step%d\n",step);
-
     for (int i = 0; i < nlocal; i++){
-
         int id = myGridCells[i];
-
         gridID2xyz(id,Ng,xyz);
-
         fprintf(out_file,"%d,%d,%d\n",xyz[0],xyz[1],xyz[2]);
-
     }
-
 }
 
 void copy(int* source, int* dest, int len){
-
     for (int i = 0; i < len; i++){
         dest[i] = source[i];
     }
-
 }
 
+//To go from alltoall to pencils
 void fix_1(int* source, int* dest, int* local_grid_size, int n_cells, int* dims){
-
     for (int idx = 0; idx < n_cells; idx++){
-
         int n_cell_in_cycles = (n_cells / dims[0]);
         int n_cell_in_lines = n_cells / (local_grid_size[0] * local_grid_size[1]);
 
@@ -42,9 +32,7 @@ void fix_1(int* source, int* dest, int* local_grid_size, int n_cells, int* dims)
         int newlineid = (lineid % 2) + 2 * (lineid / 4);
 
         dest[newlineid * n_cell_in_lines] = source[idx];
-
     }
-
 }
 
 void fix_2_forward(int* source, int* dest, int* local_grid_size, int n_cells, int* dims){
@@ -55,6 +43,7 @@ void fix_2_backward(int* source, int* dest, int* local_grid_size, int n_cells){
 
 }
 
+//change fast index
 void transpose_1(int* source, int* dest, int* local_grid_size){
 
     for (int i = 0; i < local_grid_size[2]; i++){
@@ -66,6 +55,7 @@ void transpose_1(int* source, int* dest, int* local_grid_size){
     }
 }
 
+//change fast index
 void transpose_2(int* source, int* dest, int* local_grid_size){
 
     for (int i = 0; i < local_grid_size[0]; i++){
@@ -77,6 +67,7 @@ void transpose_2(int* source, int* dest, int* local_grid_size){
     }
 }
 
+//change fast index
 void transpose_3(int* source, int* dest, int* local_grid_size){
 
     for (int i = 0; i < local_grid_size[0]; i++){
@@ -134,13 +125,15 @@ int main(int argc, char** argv) {
 
     nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
 
+    //first alltoall
     MPI_Alltoall(myGridCells,nsends,MPI_INT,myGridCellsTemp,nsends,MPI_INT,MPI_COMM_WORLD);
     save(out_file,1,xyz,Ng,nlocal,myGridCellsTemp);
 
-    fix_1(myGridCellsTemp,myGridCells,local_grid_size,nlocal,dims);
+    //try to fix data
+    //fix_1(myGridCellsTemp,myGridCells,local_grid_size,nlocal,dims);
     save(out_file,2,xyz,Ng,nlocal,myGridCells);
 
-    fix_1(myGridCells,myGridCellsTemp,local_grid_size,nlocal,dims);
+    //fix_1(myGridCells,myGridCellsTemp,local_grid_size,nlocal,dims);
     save(out_file,3,xyz,Ng,nlocal,myGridCellsTemp);
 
     MPI_Alltoall(myGridCellsTemp,nsends,MPI_INT,myGridCells,nsends,MPI_INT,MPI_COMM_WORLD);
@@ -152,13 +145,13 @@ int main(int argc, char** argv) {
     nsends = ((local_grid_size[2] * local_grid_size[1])/world_size) * local_grid_size[0];
     MPI_Alltoall(myGridCellsTemp,nsends,MPI_INT,myGridCells,nsends,MPI_INT,MPI_COMM_WORLD);
     
-    //copy(myGridCells,myGridCellsTemp,nlocal);
+    copy(myGridCells,myGridCellsTemp,nlocal);
     save(out_file,6,xyz,Ng,nlocal,myGridCells);
 
-    fix_2_forward(myGridCells,myGridCellsTemp,local_grid_size,nlocal,dims);
+    //fix_2_forward(myGridCells,myGridCellsTemp,local_grid_size,nlocal,dims);
     save(out_file,7,xyz,Ng,nlocal,myGridCellsTemp);
 
-    fix_2_backward(myGridCellsTemp,myGridCells,local_grid_size,nlocal);
+    //fix_2_backward(myGridCellsTemp,myGridCells,local_grid_size,nlocal);
     save(out_file,8,xyz,Ng,nlocal,myGridCells);
 
     MPI_Alltoall(myGridCellsTemp,nsends,MPI_INT,myGridCells,nsends,MPI_INT,MPI_COMM_WORLD);
