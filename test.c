@@ -19,33 +19,37 @@ void copy(int* source, int* dest, int len){
 }
 
 //To go from alltoall to pencils
-void fix_1(int* source, int* dest, int* local_grid_size, int n_cells, int* dims){
+void fix_1(int* source, int* dest, int world_size, int world_rank, int n_cells, int* local_grid_size, int* dims){
+    int n_cells_per_rank = n_cells / world_size;
+    int local_coords[3] = {0,0,0}; 
     for (int idx = 0; idx < n_cells; idx++){
-        int n_cell_in_cycles = (n_cells / dims[0]);
-        int n_cell_in_lines = n_cells / (local_grid_size[0] * local_grid_size[1]);
 
-        int n_lines_in_cycle = n_cell_in_cycles / n_cell_in_lines;
+        int rank = idx / n_cells_per_rank;
+        id2coords(rank,dims,local_coords);
+        local_coords[0] *= local_grid_size[0];
+        local_coords[1] *= local_grid_size[1];
+        local_coords[2] *= local_grid_size[2];
 
-        int cycleid = idx / n_cell_in_cycles;
-        int lineid = (idx / n_cell_in_lines);
+        int local_rank_idx = (idx % n_cells_per_rank);
+        int local_x = local_rank_idx / (local_grid_size[1] * local_grid_size[2]);
+        int local_y = (local_rank_idx - local_x * (local_grid_size[1] * local_grid_size[2])) / local_grid_size[2];
+        int local_z = local_rank_idx - local_x * (local_grid_size[1] * local_grid_size[2]) - local_y * local_grid_size[2];
 
-        int newlineid = (lineid % 2) + 2 * (lineid / 4);
+        int global_x = local_x + local_coords[0];
+        int global_y = local_y + local_coords[1];
+        int global_z = local_z + local_coords[2];
 
-        dest[newlineid * n_cell_in_lines] = source[idx];
+        if (world_rank == 0){
+            printf("%d > [%d,%d,%d]\n",idx,global_x,global_y,global_z);
+        }
+        //dest[new_idx] = source[idx];
     }
 }
 
-void fix_2_forward(int* source, int* dest, int* local_grid_size, int n_cells, int* dims){
 
-}
-
-void fix_2_backward(int* source, int* dest, int* local_grid_size, int n_cells){
-
-}
 
 //change fast index
 void transpose_1(int* source, int* dest, int* local_grid_size){
-
     for (int i = 0; i < local_grid_size[2]; i++){
         for (int j = 0; j < local_grid_size[1]; j++){
             for (int k = 0; k < local_grid_size[0]; k++){
@@ -57,7 +61,6 @@ void transpose_1(int* source, int* dest, int* local_grid_size){
 
 //change fast index
 void transpose_2(int* source, int* dest, int* local_grid_size){
-
     for (int i = 0; i < local_grid_size[0]; i++){
         for (int j = 0; j < local_grid_size[2]; j++){
             for (int k = 0; k < local_grid_size[1]; k++){
@@ -69,7 +72,6 @@ void transpose_2(int* source, int* dest, int* local_grid_size){
 
 //change fast index
 void transpose_3(int* source, int* dest, int* local_grid_size){
-
     for (int i = 0; i < local_grid_size[0]; i++){
         for (int j = 0; j < local_grid_size[1]; j++){
             for (int k = 0; k < local_grid_size[2]; k++){
@@ -130,12 +132,13 @@ int main(int argc, char** argv) {
     save(out_file,1,xyz,Ng,nlocal,myGridCellsTemp);
 
     //try to fix data
-    //fix_1(myGridCellsTemp,myGridCells,local_grid_size,nlocal,dims);
+    fix_1(myGridCellsTemp,myGridCells,world_size,world_rank,nlocal,local_grid_size,dims);
     save(out_file,2,xyz,Ng,nlocal,myGridCells);
 
     //fix_1(myGridCells,myGridCellsTemp,local_grid_size,nlocal,dims);
     save(out_file,3,xyz,Ng,nlocal,myGridCellsTemp);
 
+    /*
     MPI_Alltoall(myGridCellsTemp,nsends,MPI_INT,myGridCells,nsends,MPI_INT,MPI_COMM_WORLD);
     save(out_file,4,xyz,Ng,nlocal,myGridCells);
 
@@ -166,6 +169,7 @@ int main(int argc, char** argv) {
     MPI_Alltoall(myGridCellsTemp,nsends,MPI_INT,myGridCells,nsends,MPI_INT,MPI_COMM_WORLD);
     transpose_3(myGridCells,myGridCellsTemp,local_grid_size);
     save(out_file,11,xyz,Ng,nlocal,myGridCellsTemp);
+    */
 
     free(myGridCells);
     free(myGridCellsTemp);
