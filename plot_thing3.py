@@ -33,8 +33,8 @@ steps = ["step0","step1","step2","step3","step4","step5","step6","step7","step8"
 
 for step in steps:
     print("AHH")
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
+    #fig = plt.figure()
+    #ax = fig.add_subplot(projection='3d')
 
     for idx,proc in enumerate(procs[0:1]):
         coords = proc[step]
@@ -42,15 +42,15 @@ for step in steps:
         ys = coords[:,1]
         zs = coords[:,2]
 
-        ax.plot(xs,ys,zs,label=str(idx))
+        plt.scatter(ys,zs,label=str(idx))
 
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
+    #ax.set_xlabel("x")
+    #ax.set_ylabel("y")
+    #ax.set_zlabel("z")
 
-    ax.set_xlim(0,Ng)
-    ax.set_ylim(0,Ng)
-    ax.set_zlim(0,Ng)
+    #ax.set_xlim(0,Ng)
+    #ax.set_ylim(0,Ng)
+    #ax.set_zlim(0,Ng)
 
     plt.legend()
 
