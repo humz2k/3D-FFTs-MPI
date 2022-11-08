@@ -57,6 +57,9 @@ int main(int argc, char** argv) {
 
     save(out_file,0,xyz,Ng,nlocal,myGridCellsBuff1);
 
+    //
+    //Make pencils along Z axis.
+    //
     nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
 
     MPI_Alltoall(myGridCellsBuff1,nsends,MPI_INT,myGridCellsBuff2,nsends,MPI_INT,MPI_COMM_WORLD);
@@ -71,6 +74,9 @@ int main(int argc, char** argv) {
     MPI_Alltoall(myGridCellsBuff2,nsends,MPI_INT,myGridCellsBuff1,nsends,MPI_INT,MPI_COMM_WORLD);
     save(out_file,4,xyz,Ng,nlocal,myGridCellsBuff1);
 
+    //
+    //Make Pencils along x axis
+    //
     fast_z_to_x(myGridCellsBuff1,myGridCellsBuff2,local_grid_size);
     save(out_file,5,xyz,Ng,nlocal,myGridCellsBuff2);
 
@@ -88,6 +94,9 @@ int main(int argc, char** argv) {
     MPI_Alltoall(myGridCellsBuff1,nsends,MPI_INT,myGridCellsBuff2,nsends,MPI_INT,MPI_COMM_WORLD);
     save(out_file,9,xyz,Ng,nlocal,myGridCellsBuff2);
 
+    //
+    // Make pencils along y axis
+    //
     fast_x_to_y(myGridCellsBuff2,myGridCellsBuff1,local_grid_size);
     save(out_file,10,xyz,Ng,nlocal,myGridCellsBuff1);
 
