@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-n_procs = 6
-Ng = 12
+n_procs = 8
+Ng = 8
 n_grid_points = Ng*Ng*Ng
 
 my_grid_points = int(n_grid_points / n_procs)
@@ -29,7 +29,7 @@ for i in range(n_procs):
 
         lines = lines[1:][my_grid_points:]
 
-steps = ["step0","step1","step2","step3","step4","step5","step6","step7","step8","step9","step10"][:4]
+steps = ["step0","step1","step2","step3","step4","step5","step6","step7","step8","step9","step10"][:7]
 
 for step in steps:
     print("AHH")
