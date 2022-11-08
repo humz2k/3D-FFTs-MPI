@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-n_procs = 8
-Ng = 8
+n_procs = 6
+Ng = 12
 n_grid_points = Ng*Ng*Ng
 
 my_grid_points = int(n_grid_points / n_procs)

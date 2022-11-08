@@ -21,29 +21,40 @@ void copy(int* source, int* dest, int len){
 //To go from alltoall to pencils
 void fix_1(int* source, int* dest, int world_size, int world_rank, int n_cells, int* local_grid_size, int* dims){
     int n_cells_per_rank = n_cells / world_size;
-    int local_coords[3] = {0,0,0}; 
+    int n_cells_mini_pencils = local_grid_size[2];
+    int n_mini_pencils_per_rank = n_cells_per_rank / n_cells_mini_pencils;
+    int n_mini_pencils_stacked = dims[2];
+
+    if (world_rank == 0){
+        printf("n_cells_per_rank: %d\nn_cells_mini_pencils: %d\nn_mini_pencils_per_rank: %d\nn_mini_pencils_stacked: %d\n",n_cells_per_rank,n_cells_mini_pencils,n_mini_pencils_per_rank,n_mini_pencils_stacked);
+    }
+
     for (int idx = 0; idx < n_cells; idx++){
-
         int rank = idx / n_cells_per_rank;
-        id2coords(rank,dims,local_coords);
-        local_coords[0] *= local_grid_size[0];
-        local_coords[1] *= local_grid_size[1];
-        local_coords[2] *= local_grid_size[2];
 
-        int local_rank_idx = (idx % n_cells_per_rank);
-        int local_x = local_rank_idx / (local_grid_size[1] * local_grid_size[2]);
-        int local_y = (local_rank_idx - local_x * (local_grid_size[1] * local_grid_size[2])) / local_grid_size[2];
-        int local_z = local_rank_idx - local_x * (local_grid_size[1] * local_grid_size[2]) - local_y * local_grid_size[2];
+        int mini_pencil_id = (idx / n_cells_mini_pencils) % (n_mini_pencils_per_rank);
 
-        int global_x = local_x + local_coords[0];
-        int global_y = local_y + local_coords[1];
-        int global_z = local_z + local_coords[2];
+        int mini_pencil_offset = (rank % n_mini_pencils_stacked) * n_cells_mini_pencils;
+
+        int stack_id = idx / (n_mini_pencils_stacked * n_cells_per_rank);
+        
+        int offset = stack_id * n_mini_pencils_stacked * n_cells_per_rank;
+
+        int new_idx = offset + mini_pencil_offset + mini_pencil_id * n_mini_pencils_stacked * n_cells_mini_pencils + (idx % n_cells_mini_pencils);
+        
+        dest[new_idx] = source[idx];
 
         if (world_rank == 0){
-            printf("%d > [%d,%d,%d]\n",idx,global_x,global_y,global_z);
+            printf("idx: %d, rank: %d, offset: %d, mini_pencil_id: %d, stack_id: %d, mini_pencil_offset: %d, new_idx: %d\n",idx,rank,offset,mini_pencil_id,stack_id,mini_pencil_offset,new_idx);
         }
-        //dest[new_idx] = source[idx];
     }
+
+    /*for (int rank = 0; rank < world_size; rank++){
+        int offset = rank * n_mini_pencil;
+        for (int i = 0; i < n_cells_per_rank; i++){
+
+        }
+    }*/
 }
 
 
@@ -86,16 +97,16 @@ int main(int argc, char** argv) {
     MPI_Init(NULL, NULL);
 
     int ndims = 3;
-    int Ng = 8;
+    int Ng = 12;
     
     //get MPI world rank and size
     int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     int world_rank; MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     //get info about dimensions/local grid size
     int dims[3] = {0,0,0}; MPI_Dims_create(world_size,ndims,dims);
-    /*dims[0] = 1;
+    dims[0] = 1;
     dims[1] = 2;
-    dims[2] = 3;*/
+    dims[2] = 3;
 
     printf("DIMS [%d,%d,%d]\n",dims[0],dims[1],dims[2]);
 
@@ -134,6 +145,8 @@ int main(int argc, char** argv) {
     //try to fix data
     fix_1(myGridCellsTemp,myGridCells,world_size,world_rank,nlocal,local_grid_size,dims);
     save(out_file,2,xyz,Ng,nlocal,myGridCells);
+
+    
 
     //fix_1(myGridCells,myGridCellsTemp,local_grid_size,nlocal,dims);
     save(out_file,3,xyz,Ng,nlocal,myGridCellsTemp);
