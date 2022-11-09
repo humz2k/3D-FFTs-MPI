@@ -74,20 +74,14 @@ def get_coords(rank,step,raw_data,Ng):
         zs[idx] = z
     return xs,ys,zs,raw
 
-x,y,z,raw = get_coords(0,1,raw_data,ng)
+def plot(step,nproc):
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    for rank in nproc:
+        x,y,z,raw = get_coords(0,1,raw_data,ng)
+        ax.plot(x,y,z)
 
-print(raw_data[0])
-
-print(raw)
-
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
-
-ax.plot(x,y,z)
-
-plt.savefig("test.jpg")
-
-plt.close()
-
+    plt.savefig("test.jpg")
+    plt.close()
 
 #print(np.fromfile("proc0",dtype=np.float32))
