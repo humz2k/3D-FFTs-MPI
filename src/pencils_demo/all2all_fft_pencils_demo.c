@@ -1,6 +1,7 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "helpers/helpers.h"
 #include "a2a_to_pencils/a2a_to_pencils.h"
 #include "change_fast_axis/change_fast_axis.h"
@@ -19,7 +20,7 @@ int main(int argc, char** argv) {
     MPI_Init(NULL, NULL);
 
     int ndims = 3;
-    int Ng = 8;
+    int Ng = 12;
     
     //get MPI world rank and size
     int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -34,6 +35,14 @@ int main(int argc, char** argv) {
 
     int local_coordinates_start[3] = {0,0,0}; get_local_start(local_grid_size,coords,local_coordinates_start);
     int nlocal = local_grid_size[0] * local_grid_size[1] * local_grid_size[2];
+
+    assert((world_size % dims[0]) == 0);
+    assert((world_size % dims[1]) == 0);
+    assert((world_size % dims[2]) == 0);
+
+    assert(((local_grid_size[0] * local_grid_size[1]) % world_size) == 0);
+    assert(((local_grid_size[0] * local_grid_size[2]) % world_size) == 0);
+    assert(((local_grid_size[1] * local_grid_size[2]) % world_size) == 0);
 
     if (world_rank == 0){
         printf("DIMS [%d,%d,%d]\n",dims[0],dims[1],dims[2]);
