@@ -53,10 +53,10 @@ int main(int argc, char** argv){
     float* myGridCellsBuff1 = (float*) malloc(nlocal * sizeof(float) * 2);
     float* myGridCellsBuff2 = (float*) malloc(nlocal * sizeof(float) * 2);
 
-    float* d_myGridCellsBuff1;
-    float* d_myGridCellsBuff2;
+    float** d_myGridCellsBuff1 = (float**) malloc(sizeof(float*));
+    float** d_myGridCellsBuff2 = (float**) malloc(sizeof(float*));
 
-    initialize_cuda(d_myGridCellsBuff1,d_myGridCellsBuff2,nlocal);
+    initialize_cuda(d_myGridCellsBuff1,d_myGridCellsBuff2,nlocal, myGridCellsBuff1);
 
     int nsends;
 
@@ -79,23 +79,15 @@ int main(int argc, char** argv){
     MPI_Type_commit(&TYPE_COMPLEX);
 
     nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
-    //MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
 
-    copy_h2d(myGridCellsBuff1,d_myGridCellsBuff1,nlocal);
+    copy_h2d(d_myGridCellsBuff1,myGridCellsBuff2,nlocal);
 
-    //launch_d_z_a2a_to_z_pencils(d_myGridCellsBuff1, d_myGridCellsBuff2, blockSize, world_size, world_rank, nlocal, local_grid_size, dims);
+    launch_d_z_a2a_to_z_pencils(d_myGridCellsBuff1, d_myGridCellsBuff2, blockSize, world_size, world_rank, nlocal, local_grid_size, dims);
 
-    copy_d2h(d_myGridCellsBuff1,myGridCellsBuff2,nlocal);
+    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff2,nlocal);
 
-    if (world_rank == 0){
-        printf("rank %d myGridCells:\n  ",world_rank);
-        int nprint = 5;
-        for (int i = 0; i < (nprint-1)*2; i+=2){
-            printf("%f + %fi, ",myGridCellsBuff2[i],myGridCellsBuff2[i+1]);
-        }
-        printf("%f + %fi ...\n",myGridCellsBuff2[(nprint-1)*2],myGridCellsBuff2[(nprint-1)*2 + 1]);
-    }
-
+    
 
     fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
 
@@ -103,7 +95,9 @@ int main(int argc, char** argv){
     
     free(myGridCellsBuff1);
     free(myGridCellsBuff2);
-    finalize_cuda(myGridCellsBuff1,myGridCellsBuff2);
+    finalize_cuda(d_myGridCellsBuff1,d_myGridCellsBuff2);
+    free(d_myGridCellsBuff1);
+    free(d_myGridCellsBuff2);
     MPI_Finalize();
 
 

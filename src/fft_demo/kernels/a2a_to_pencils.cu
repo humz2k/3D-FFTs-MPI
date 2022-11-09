@@ -16,7 +16,7 @@ void d_z_a2a_to_z_pencils(float* source, float* dest, int n_cells_per_rank, int 
 }
 
 extern "C" {
-    void launch_d_z_a2a_to_z_pencils(float* source, float* dest, int blockSize, int world_size, int world_rank, int nlocal, int* local_grid_size, int* dims){
+    void launch_d_z_a2a_to_z_pencils(float** source, float** dest, int blockSize, int world_size, int world_rank, int nlocal, int* local_grid_size, int* dims){
 
         int numBlocks = (nlocal + blockSize - 1) / blockSize;
 
@@ -25,7 +25,7 @@ extern "C" {
         int n_mini_pencils_per_rank = n_cells_per_rank / n_cells_mini_pencils;
         int n_mini_pencils_stacked = dims[2];
 
-        d_z_a2a_to_z_pencils<<<numBlocks,blockSize>>>(source, dest, n_cells_per_rank, n_cells_mini_pencils, n_mini_pencils_per_rank, n_mini_pencils_stacked);
+        d_z_a2a_to_z_pencils<<<numBlocks,blockSize>>>(source[0], dest[0], n_cells_per_rank, n_cells_mini_pencils, n_mini_pencils_per_rank, n_mini_pencils_stacked);
 
         cudaDeviceSynchronize();
     }
