@@ -92,7 +92,7 @@ void y_a2a_to_y_pencils(int* source, int* dest, int world_size, int world_rank, 
     int n_cells_mini_pencils = local_grid_size[1];
     int n_mini_pencils_per_rank = n_cells_per_rank / n_cells_mini_pencils;
     int n_mini_pencils_stacked = dims[1];
-    int n_cells_per_stack = n_cells / n_mini_pencils_stacked;
+    //int n_cells_per_stack = n_cells / n_mini_pencils_stacked;
     int n_ranks_per_stack = world_size / n_mini_pencils_stacked;
     int n_ranks_per_tower = (n_ranks_per_stack / dims[0]);
 
@@ -116,7 +116,7 @@ void y_pencils_to_y_a2a(int* source, int* dest, int world_size, int world_rank, 
     int n_cells_mini_pencils = local_grid_size[1];
     int n_mini_pencils_per_rank = n_cells_per_rank / n_cells_mini_pencils;
     int n_mini_pencils_stacked = dims[1];
-    int n_cells_per_stack = n_cells / n_mini_pencils_stacked;
+    //int n_cells_per_stack = n_cells / n_mini_pencils_stacked;
     int n_ranks_per_stack = world_size / n_mini_pencils_stacked;
     int n_ranks_per_tower = (n_ranks_per_stack / dims[0]);
 
