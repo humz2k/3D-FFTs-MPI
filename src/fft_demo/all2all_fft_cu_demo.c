@@ -85,11 +85,21 @@ int main(int argc, char** argv){
 
     launch_d_z_a2a_to_z_pencils(d_myGridCellsBuff1, d_myGridCellsBuff2, blockSize, world_size, world_rank, nlocal, local_grid_size, dims);
 
-    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff2,nlocal);
+    //copy_d2h(myGridCellsBuff1,d_myGridCellsBuff2,nlocal);
+    //fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
+
+    launch_d_z_pencils_to_z_a2a(d_myGridCellsBuff2, d_myGridCellsBuff1, blockSize, world_size, world_rank, nlocal, local_grid_size, dims);
+
+    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff1,nlocal);
+    //fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
+
+    MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+
+    copy_h2d(d_myGridCellsBuff1, myGridCellsBuff2,nlocal);
+
+    //fwrite(myGridCellsBuff2,sizeof(float),nlocal*2,out_file);
 
     
-
-    fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
 
     fclose(out_file);
     
