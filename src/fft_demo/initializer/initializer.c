@@ -27,7 +27,33 @@ extern void get_local_grid_start(int* local_grid_size, int* coords, int* local_c
 
 }
 
-extern void populate_grid(float* myGridCells, int nlocal, int world_rank, int* local_coordinates_start, int* local_grid_size, int Ng){
+extern void populate_grid(float* myGridCells, int nlocal){
+
+    for (int i = 0; i < (nlocal*2); i+=2){
+        myGridCells[i] = ((float)rand()) / (float)RAND_MAX;
+        myGridCells[i+1] = 0;
+    }
+
+    /*int count = 0;
+
+    for (int i = 0; i < local_grid_size[0]; i++){
+        for (int j = 0; j < local_grid_size[1]; j++){
+            for (int k = 0; k < local_grid_size[2]; k++){
+
+                int id = (i + local_coordinates_start[0]) * Ng * Ng + (j + local_coordinates_start[1])*Ng + k + local_coordinates_start[2];
+
+                myGridCells[count*2] = (float)id;
+                myGridCells[count*2 + 1] = 0;
+
+                count++;
+
+            }
+        }
+    }*/
+
+}
+
+extern void populate_grid_index(float* myGridCells, int nlocal, int world_rank, int* local_coordinates_start, int* local_grid_size, int Ng){
 
     /*for (int i = 0; i < (nlocal*2); i+=2){
         myGridCells[i] = ((float)rand()) / (float)RAND_MAX;

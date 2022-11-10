@@ -1,1 +1,0 @@
-extern "C" { unsigned long long CPUTimer(unsigned long long start=0); }

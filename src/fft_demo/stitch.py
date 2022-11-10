@@ -84,6 +84,12 @@ def plot(step,nproc,raw_data,ng):
     plt.savefig("test.jpg")
     plt.close()
 
-plot(0,8,raw_data,ng)
+#plot(1,8,raw_data,ng)
+
+out = stitch(raw_data,dims,ng,local_grid,1)
+
+inp = stitch(raw_data,dims,ng,local_grid,0)
+
+print(np.fft.fftn(inp) - out)
 
 #print(np.fromfile("proc0",dtype=np.float32))

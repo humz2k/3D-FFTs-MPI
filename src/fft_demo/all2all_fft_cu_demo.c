@@ -60,8 +60,8 @@ int main(int argc, char** argv){
 
     int nsends;
 
-    //populate_grid(myGridCellsBuff1,nlocal);
-    populate_grid(myGridCellsBuff1, nlocal, world_rank, local_coordinates_start, local_grid_size, Ng);
+    populate_grid(myGridCellsBuff1,nlocal);
+    //populate_grid(myGridCellsBuff1, nlocal, world_rank, local_coordinates_start, local_grid_size, Ng);
 
     if (world_rank == 0){
         printf("rank %d myGridCells:\n  ",world_rank);
@@ -94,7 +94,7 @@ int main(int argc, char** argv){
 
     launch_d_z_a2a_to_z_pencils(d_myGridCellsBuff1, d_myGridCellsBuff2, blockSize, world_size, nlocal, local_grid_size, dims);
 
-    /*FFT HERE*/
+    forward_1d_fft(d_myGridCellsBuff2, Ng, nlocal);
 
     launch_d_z_pencils_to_z_a2a(d_myGridCellsBuff2, d_myGridCellsBuff1, blockSize, world_size, nlocal, local_grid_size, dims);
 
@@ -120,7 +120,7 @@ int main(int argc, char** argv){
 
     launch_d_x_a2a_to_x_pencils(d_myGridCellsBuff1,d_myGridCellsBuff2,blockSize,world_size,nlocal,local_grid_size,dims);
 
-    /*FFT here*/
+    forward_1d_fft(d_myGridCellsBuff2, Ng, nlocal);
 
     launch_d_x_pencils_to_x_a2a(d_myGridCellsBuff2, d_myGridCellsBuff1, blockSize, world_size, nlocal, local_grid_size, dims);
 
@@ -146,7 +146,7 @@ int main(int argc, char** argv){
 
     launch_d_y_a2a_to_y_pencils(d_myGridCellsBuff1, d_myGridCellsBuff2, blockSize, world_size, nlocal, local_grid_size, dims);
 
-    /*FFT here*/
+    forward_1d_fft(d_myGridCellsBuff2, Ng, nlocal);
 
     launch_d_y_pencils_to_y_a2a(d_myGridCellsBuff2, d_myGridCellsBuff1, blockSize, world_size, nlocal, local_grid_size, dims);
 
