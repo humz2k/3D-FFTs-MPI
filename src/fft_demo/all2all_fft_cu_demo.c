@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "kernels/kernels.h"
+#include "fft_3d/fft_3d.h"
 #include "initializer/initializer.h"
 
 int main(int argc, char** argv){
@@ -58,7 +59,11 @@ int main(int argc, char** argv){
 
     initialize_cuda(d_myGridCellsBuff1,d_myGridCellsBuff2,nlocal, myGridCellsBuff1);
 
-    int nsends;
+    //int nsends;
+
+    MPI_Datatype TYPE_COMPLEX;
+    MPI_Type_contiguous((int)sizeof(float) * 2, MPI_BYTE, &TYPE_COMPLEX);
+    MPI_Type_commit(&TYPE_COMPLEX);
 
     populate_grid(myGridCellsBuff1,nlocal);
     //populate_grid(myGridCellsBuff1, nlocal, world_rank, local_coordinates_start, local_grid_size, Ng);
@@ -74,95 +79,7 @@ int main(int argc, char** argv){
 
     fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
 
-    MPI_Datatype TYPE_COMPLEX;
-    MPI_Type_contiguous((int)sizeof(float) * 2, MPI_BYTE, &TYPE_COMPLEX);
-    MPI_Type_commit(&TYPE_COMPLEX);
-
-    ////////////////////////////////////
-    //        3D FFT Algorithm        // 
-    ////////////////////////////////////
-
-    //////////
-    //Z AXIS//
-    //////////
-
-    nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
-
-    MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    copy_h2d(d_myGridCellsBuff1,myGridCellsBuff2,nlocal);
-
-    launch_d_z_a2a_to_z_pencils(d_myGridCellsBuff1, d_myGridCellsBuff2, blockSize, world_size, nlocal, local_grid_size, dims);
-
-    forward_1d_fft(d_myGridCellsBuff2, Ng, nlocal);
-
-    launch_d_z_pencils_to_z_a2a(d_myGridCellsBuff2, d_myGridCellsBuff1, blockSize, world_size, nlocal, local_grid_size, dims);
-
-    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff1,nlocal);
-
-    MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    //////////
-    //X AXIS//
-    ////////// 
-
-    copy_h2d(d_myGridCellsBuff1, myGridCellsBuff2,nlocal);
-
-    launch_d_fast_z_to_x(d_myGridCellsBuff1, d_myGridCellsBuff2, local_grid_size, blockSize, nlocal);
-
-    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff2,nlocal);
-
-    nsends = ((local_grid_size[2] * local_grid_size[1])/world_size) * local_grid_size[0];
-
-    MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    copy_h2d(d_myGridCellsBuff1, myGridCellsBuff2,nlocal);
-
-    launch_d_x_a2a_to_x_pencils(d_myGridCellsBuff1,d_myGridCellsBuff2,blockSize,world_size,nlocal,local_grid_size,dims);
-
-    forward_1d_fft(d_myGridCellsBuff2, Ng, nlocal);
-
-    launch_d_x_pencils_to_x_a2a(d_myGridCellsBuff2, d_myGridCellsBuff1, blockSize, world_size, nlocal, local_grid_size, dims);
-
-    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff1,nlocal);
-
-    MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    //////////
-    //Y AXIS//
-    ////////// 
-
-    copy_h2d(d_myGridCellsBuff1, myGridCellsBuff2,nlocal);
-
-    launch_d_fast_x_to_y(d_myGridCellsBuff1, d_myGridCellsBuff2, local_grid_size, blockSize, nlocal);
-    
-    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff2,nlocal);
-
-    nsends = ((local_grid_size[2] * local_grid_size[0])/world_size) * local_grid_size[1];
-
-    MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    copy_h2d(d_myGridCellsBuff1, myGridCellsBuff2,nlocal);
-
-    launch_d_y_a2a_to_y_pencils(d_myGridCellsBuff1, d_myGridCellsBuff2, blockSize, world_size, nlocal, local_grid_size, dims);
-
-    forward_1d_fft(d_myGridCellsBuff2, Ng, nlocal);
-
-    launch_d_y_pencils_to_y_a2a(d_myGridCellsBuff2, d_myGridCellsBuff1, blockSize, world_size, nlocal, local_grid_size, dims);
-
-    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff1,nlocal);
-
-    MPI_Alltoall(myGridCellsBuff1,nsends,TYPE_COMPLEX,myGridCellsBuff2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    ////////////
-    //Finalize//
-    ////////////  
-
-    copy_h2d(d_myGridCellsBuff1, myGridCellsBuff2,nlocal);
-
-    launch_d_fast_y_to_z(d_myGridCellsBuff1, d_myGridCellsBuff2, local_grid_size, blockSize, nlocal);
-
-    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff2,nlocal);
+    forward_fft3d(myGridCellsBuff1, myGridCellsBuff2, d_myGridCellsBuff1, d_myGridCellsBuff2, Ng, nlocal, world_size, local_grid_size, dims, blockSize, TYPE_COMPLEX);
 
     fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
 

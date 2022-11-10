@@ -24,3 +24,4 @@ void launch_d_y_a2a_to_y_pencils(float** source, float** dest, int blockSize, in
 void launch_d_y_pencils_to_y_a2a(float** source, float** dest, int blockSize, int world_size, int nlocal, int* local_grid_size, int* dims);
 
 void forward_1d_fft(float** data, int Ng, int nlocal);
+void inverse_1d_fft(float** data, int Ng, int nlocal);
