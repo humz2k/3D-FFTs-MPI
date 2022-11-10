@@ -99,7 +99,11 @@ int main(int argc, char** argv){
 
     //fwrite(myGridCellsBuff2,sizeof(float),nlocal*2,out_file);
 
-    
+    launch_d_fast_z_to_x(d_myGridCellsBuff1, d_myGridCellsBuff2, local_grid_size, blockSize, nlocal);
+
+    copy_d2h(myGridCellsBuff1,d_myGridCellsBuff2,nlocal);
+
+    fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
 
     fclose(out_file);
     

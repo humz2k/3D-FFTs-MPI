@@ -15,3 +15,8 @@ run:
 
 stitch:
 	python3 stitch.py
+
+clean:
+	rm *.o
+	rm proc*
+	rm params
