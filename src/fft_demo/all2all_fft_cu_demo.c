@@ -57,7 +57,7 @@ int main(int argc, char** argv){
     float** d_myGridCellsBuff1 = (float**) malloc(sizeof(float*));
     float** d_myGridCellsBuff2 = (float**) malloc(sizeof(float*));
 
-    initialize_cuda(d_myGridCellsBuff1,d_myGridCellsBuff2,nlocal, myGridCellsBuff1);
+    initialize_cuda(d_myGridCellsBuff1, d_myGridCellsBuff2, nlocal);
 
     //int nsends;
 

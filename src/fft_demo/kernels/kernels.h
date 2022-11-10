@@ -1,7 +1,7 @@
 
 unsigned long long CPUTimer(unsigned long long start);
 
-void initialize_cuda(float** d_myGridCellsBuff1, float** d_myGridCellsBuff2, int nlocal, float* myGridCellsBuff1);
+void initialize_cuda(float** d_myGridCellsBuff1, float** d_myGridCellsBuff2, int nlocal);
 void finalize_cuda(float** d_myGridCellsBuff1, float** d_myGridCellsBuff2);
 
 
