@@ -21,6 +21,8 @@ extern "C" {
             return;	
         }
 
+        cudaDeviceSynchronize();
+
         /*if (cufftExecC2C(plan, (cufftComplex*)data[0], (cufftComplex*)data[0], CUFFT_INVERSE) != CUFFT_SUCCESS){
             printf("CUFFT error: ExecC2C Forward failed\n");
             return;	
@@ -48,10 +50,42 @@ extern "C" {
             return;	
         }
 
+        cudaDeviceSynchronize();
+
         /*if (cufftExecC2C(plan, (cufftComplex*)data[0], (cufftComplex*)data[0], CUFFT_INVERSE) != CUFFT_SUCCESS){
             printf("CUFFT error: ExecC2C Forward failed\n");
             return;	
         }*/
+
+    }
+
+}
+
+__global__
+void scale_fft(float* data, int Ng, int nlocal){
+
+    int idx = blockDim.x * blockIdx.x + threadIdx.x;
+
+    float scale = (float)(Ng * Ng * Ng);
+
+    if (idx < nlocal){
+
+        data[idx*2] = data[idx*2] / scale;
+        data[idx*2 + 1] = data[idx*2 + 1] / scale;
+
+    }
+
+}
+
+extern "C" {
+
+    void launch_scale_fft(float** data, int Ng, int nlocal, int blockSize){
+
+        int numBlocks = (nlocal + blockSize - 1) / blockSize;
+
+        scale_fft<<<numBlocks,blockSize>>>(data[0],Ng,nlocal);
+
+        cudaDeviceSynchronize();
 
     }
 

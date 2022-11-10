@@ -25,3 +25,5 @@ void launch_d_y_pencils_to_y_a2a(float** source, float** dest, int blockSize, in
 
 void forward_1d_fft(float** data, int Ng, int nlocal);
 void inverse_1d_fft(float** data, int Ng, int nlocal);
+
+void launch_scale_fft(float** data, int Ng, int nlocal, int blockSize);

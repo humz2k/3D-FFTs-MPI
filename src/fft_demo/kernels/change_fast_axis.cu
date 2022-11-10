@@ -1,17 +1,21 @@
 __global__
-void d_fast_z_to_x(float* source, float* dest, int lgridx, int lgridy, int lgridz){
+void d_fast_z_to_x(float* source, float* dest, int lgridx, int lgridy, int lgridz, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
-    int i = idx / (lgridx * lgridy);
-    int j = (idx - (i * lgridx * lgridy)) / lgridx;
-    int k = idx - (i * (lgridx * lgridy)) - (j * lgridx);
+    if (idx < nlocal){
 
-    int dest_index = i*lgridy*lgridx + j*lgridx + k;
-    int source_index = k*lgridy*lgridz + j*lgridz + i;
+        int i = idx / (lgridx * lgridy);
+        int j = (idx - (i * lgridx * lgridy)) / lgridx;
+        int k = idx - (i * (lgridx * lgridy)) - (j * lgridx);
 
-    dest[dest_index * 2] = source[source_index * 2];
-    dest[dest_index * 2 + 1] = source[source_index * 2 + 1];
+        int dest_index = i*lgridy*lgridx + j*lgridx + k;
+        int source_index = k*lgridy*lgridz + j*lgridz + i;
+
+        dest[dest_index * 2] = source[source_index * 2];
+        dest[dest_index * 2 + 1] = source[source_index * 2 + 1];
+
+    }
 
 }
 
@@ -21,7 +25,7 @@ extern "C"{
 
         int numBlocks = (nlocal + blockSize - 1) / blockSize;
 
-        d_fast_z_to_x<<<numBlocks,blockSize>>>(source[0], dest[0], local_grid_size[0], local_grid_size[1], local_grid_size[2]);
+        d_fast_z_to_x<<<numBlocks,blockSize>>>(source[0], dest[0], local_grid_size[0], local_grid_size[1], local_grid_size[2], nlocal);
 
         cudaDeviceSynchronize();
 
@@ -30,19 +34,23 @@ extern "C"{
 }
 
 __global__
-void d_fast_x_to_y(float* source, float* dest, int lgridx, int lgridy, int lgridz){
+void d_fast_x_to_y(float* source, float* dest, int lgridx, int lgridy, int lgridz, int nlocal){
     
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
-    int i = idx / (lgridz * lgridy);
-    int j = (idx - (i * lgridz * lgridy)) / lgridy;
-    int k = idx - (i * (lgridz * lgridy)) - (j * lgridy);
+    if (idx < nlocal){
 
-    int dest_index = i*lgridz*lgridy + j*lgridy + k;
-    int source_index = j*lgridx*lgridy + k*lgridx + i;
+        int i = idx / (lgridz * lgridy);
+        int j = (idx - (i * lgridz * lgridy)) / lgridy;
+        int k = idx - (i * (lgridz * lgridy)) - (j * lgridy);
 
-    dest[dest_index * 2] = source[source_index * 2];
-    dest[dest_index * 2 + 1] = source[source_index * 2 + 1];
+        int dest_index = i*lgridz*lgridy + j*lgridy + k;
+        int source_index = j*lgridx*lgridy + k*lgridx + i;
+
+        dest[dest_index * 2] = source[source_index * 2];
+        dest[dest_index * 2 + 1] = source[source_index * 2 + 1];
+
+    }
 
 }
 
@@ -52,7 +60,7 @@ extern "C" {
         
         int numBlocks = (nlocal + blockSize - 1) / blockSize;
 
-        d_fast_x_to_y<<<numBlocks,blockSize>>>(source[0], dest[0], local_grid_size[0], local_grid_size[1], local_grid_size[2]);
+        d_fast_x_to_y<<<numBlocks,blockSize>>>(source[0], dest[0], local_grid_size[0], local_grid_size[1], local_grid_size[2], nlocal);
 
         cudaDeviceSynchronize();
 
@@ -61,19 +69,23 @@ extern "C" {
 }
 
 __global__
-void d_fast_y_to_z(float* source, float* dest, int lgridx, int lgridy, int lgridz){
+void d_fast_y_to_z(float* source, float* dest, int lgridx, int lgridy, int lgridz, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
-    int i = idx / (lgridz * lgridy);
-    int j = (idx - (i * lgridz * lgridy)) / lgridz;
-    int k = idx - (i * (lgridz * lgridy)) - (j * lgridz);
+    if (idx < nlocal){
 
-    int dest_index = i*lgridz*lgridy + j*lgridz + k;
-    int source_index = i*lgridz*lgridy + k*lgridy + j;
+        int i = idx / (lgridz * lgridy);
+        int j = (idx - (i * lgridz * lgridy)) / lgridz;
+        int k = idx - (i * (lgridz * lgridy)) - (j * lgridz);
 
-    dest[dest_index * 2] = source[source_index * 2];
-    dest[dest_index * 2 + 1] = source[source_index * 2 + 1];
+        int dest_index = i*lgridz*lgridy + j*lgridz + k;
+        int source_index = i*lgridz*lgridy + k*lgridy + j;
+
+        dest[dest_index * 2] = source[source_index * 2];
+        dest[dest_index * 2 + 1] = source[source_index * 2 + 1];
+
+    }
 
 }
 
@@ -83,7 +95,7 @@ extern "C" {
         
         int numBlocks = (nlocal + blockSize - 1) / blockSize;
 
-        d_fast_y_to_z<<<numBlocks,blockSize>>>(source[0], dest[0], local_grid_size[0], local_grid_size[1], local_grid_size[2]);
+        d_fast_y_to_z<<<numBlocks,blockSize>>>(source[0], dest[0], local_grid_size[0], local_grid_size[1], local_grid_size[2], nlocal);
 
         cudaDeviceSynchronize();
 

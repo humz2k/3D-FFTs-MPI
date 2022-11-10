@@ -83,6 +83,10 @@ int main(int argc, char** argv){
 
     fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
 
+    inverse_fft3d(myGridCellsBuff1, myGridCellsBuff2, d_myGridCellsBuff1, d_myGridCellsBuff2, Ng, nlocal, world_size, local_grid_size, dims, blockSize, TYPE_COMPLEX);
+
+    fwrite(myGridCellsBuff1,sizeof(float),nlocal*2,out_file);
+
     fclose(out_file);
     
     free(myGridCellsBuff1);

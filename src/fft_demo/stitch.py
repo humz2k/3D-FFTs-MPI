@@ -90,6 +90,14 @@ out = stitch(raw_data,dims,ng,local_grid,1)
 
 inp = stitch(raw_data,dims,ng,local_grid,0)
 
+inv = stitch(raw_data,dims,ng,local_grid,2)
+
 print(np.fft.fftn(inp) - out)
+
+#print(inp)
+
+#scaled = inv / (ng * ng * ng)
+
+print((inp - inv)/inp)
 
 #print(np.fromfile("proc0",dtype=np.float32))

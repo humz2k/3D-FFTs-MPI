@@ -1,1 +1,3 @@
 extern void forward_fft3d(float* myGridCellsBuff1, float* myGridCellsBuff2, float** d_myGridCellsBuff1, float** d_myGridCellsBuff2, int Ng, int nlocal, int world_size, int* local_grid_size, int* dims, int blockSize, MPI_Datatype type_complex);
+
+extern void inverse_fft3d(float* myGridCellsBuff1, float* myGridCellsBuff2, float** d_myGridCellsBuff1, float** d_myGridCellsBuff2, int Ng, int nlocal, int world_size, int* local_grid_size, int* dims, int blockSize, MPI_Datatype type_complex);
