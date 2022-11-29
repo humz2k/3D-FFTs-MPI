@@ -21,35 +21,41 @@ int main(int argc, char** argv){
     int Ng = 8;
     int blockSize = 64;
 
+    int nlocal = (Ng*Ng*Ng)/8;
+
+    int world_rank; MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
     a2aDistribution dist(MPI_COMM_WORLD,Ng);
     a2adfft dfft(dist);
-
-    fftPrecision* data = (fftPrecision*) malloc(dist.nlocal * sizeof(fftPrecision) * 2);
-    fftPrecision* scratch = (fftPrecision*) malloc(dist.nlocal * sizeof(fftPrecision) * 2);
+    
+    fftPrecision* data = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
+    fftPrecision* scratch = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
 
     fftPrecision** d_Buff1 = (fftPrecision**) malloc(sizeof(fftPrecision*));
     fftPrecision** d_Buff2 = (fftPrecision**) malloc(sizeof(fftPrecision*));
 
-    initialize_cuda(d_Buff1,d_Buff2,dist.nlocal);
+    initialize_cuda(d_Buff1,d_Buff2,nlocal);
 
-    char name[] = "proc0"; char c = dist.world_rank + '0'; name[4] = c;
+    char name[] = "proc0"; char c = world_rank + '0'; name[4] = c;
     FILE *out_file = fopen(name, "w");
 
-    populate_grid(data,dist.nlocal);
+    populate_grid(data,nlocal);
 
     fwrite(data,sizeof(fftPrecision),dist.nlocal*2,out_file);
 
     dfft.make_plans(scratch,d_Buff1,d_Buff2);
 
-    dfft.forward(data);
+    //dfft.forward(data);
 
     fwrite(data,sizeof(fftPrecision),dist.nlocal*2,out_file);
 
+    fclose(out_file);
     free(data);
     free(scratch);
     finalize_cuda(d_Buff1,d_Buff2);
     free(d_Buff1);
     free(d_Buff2);
+    dist.finalize();
     MPI_Finalize();
 
 }

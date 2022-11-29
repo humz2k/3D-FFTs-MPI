@@ -12,6 +12,8 @@ class a2aDistribution {
         int world_rank;
         int local_grid_size[3];
         int dims[3];
+        int coords[3];
+        int local_coordinates_start[3];
         int blockSize;
         MPI_Datatype TYPE_COMPLEX;
         MPI_Comm comm;
@@ -29,5 +31,7 @@ class a2aDistribution {
         void getYPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
 
         void returnYPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
+
+        void finalize();
 
 };

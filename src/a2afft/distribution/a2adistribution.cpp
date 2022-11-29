@@ -42,26 +42,30 @@ void get_local_grid_start(int* local_grid_size, int* coords, int* local_coordina
 
 }
 
-a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng){
+a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng)
+
+: dims {0,0,0}, coords {0,0,0}, local_grid_size {0,0,0}, local_coordinates_start {0,0,0}
+
+{
 
     ndims = 3;
     Ng = input_Ng;
     comm = input_comm;
 
-    int world_size; MPI_Comm_size(comm, &world_size);
-    int world_rank; MPI_Comm_rank(comm, &world_rank);
+    MPI_Comm_size(comm, &world_size);
+    MPI_Comm_rank(comm, &world_rank);
 
-    int dims[3] = {0,0,0}; MPI_Dims_create(world_size,ndims,dims);
+    MPI_Dims_create(world_size,ndims,dims);
 
     assert((Ng % dims[0]) == 0);
     assert((Ng % dims[1]) == 0);
     assert((Ng % dims[2]) == 0);
 
-    int coords[3] = {0,0,0}; rank2coords(world_rank,dims,coords);
-    int local_grid_size[3] = {0,0,0}; topology2localgrid(Ng,dims,local_grid_size);
-    int local_coordinates_start[3] = {0,0,0}; get_local_grid_start(local_grid_size,coords,local_coordinates_start);
+    rank2coords(world_rank,dims,coords);
+    topology2localgrid(Ng,dims,local_grid_size);
+    get_local_grid_start(local_grid_size,coords,local_coordinates_start);
 
-    int nlocal = local_grid_size[0] * local_grid_size[1] * local_grid_size[2];
+    nlocal = local_grid_size[0] * local_grid_size[1] * local_grid_size[2];
 
     MPI_Type_contiguous((int)sizeof(fftPrecision) * 2, MPI_BYTE, &TYPE_COMPLEX);
     MPI_Type_commit(&TYPE_COMPLEX);
@@ -184,4 +188,8 @@ void a2aDistribution::returnYPencils(fftPrecision* data, fftPrecision* scratch, 
 
     copy_d2h(data,d_Buff1,nlocal);
 
+}
+
+void a2aDistribution::finalize(){
+    MPI_Type_free(&TYPE_COMPLEX);
 }
