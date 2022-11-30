@@ -1,4 +1,5 @@
 #include "kernels.h"
+#include <stdio.h>
 
 __global__
 void d_z_a2a_to_z_pencils(fftPrecision* source, fftPrecision* dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int nlocal){

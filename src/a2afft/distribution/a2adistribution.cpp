@@ -42,7 +42,7 @@ void get_local_grid_start(int* local_grid_size, int* coords, int* local_coordina
 
 }
 
-a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng)
+a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng, int input_blockSize)
 
 : dims {0,0,0}, coords {0,0,0}, local_grid_size {0,0,0}, local_coordinates_start {0,0,0}
 
@@ -51,6 +51,8 @@ a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng)
     ndims = 3;
     Ng = input_Ng;
     comm = input_comm;
+
+    blockSize = input_blockSize;
 
     MPI_Comm_size(comm, &world_size);
     MPI_Comm_rank(comm, &world_rank);

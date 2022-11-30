@@ -7,7 +7,7 @@ demo:
 	mpicc -c fft_3d/fft_3d.c -o fft_3d.o
 	mpicc -c all2all_fft_cu_demo.c -o all2all_fft_cu_demo.o
 	mpicc -c initializer/initializer.c -o initializer.o
-	mpicxx all2all_fft_cu_demo.o fft_3d.o timer.o a2a_cuda_utils.o a2a_ffts.o a2a_to_pencils.o change_fast_axis.o initializer.o -L/usr/local/cuda-10.2/lib64 -lcufft -lcudart -o main.o 
+	mpicxx all2all_fft_cu_demo.o fft_3d.o timer.o a2a_cuda_utils.o a2a_ffts.o a2a_to_pencils.o change_fast_axis.o initializer.o -L/usr/local/cuda/lib64 -lcufft -lcudart -o main.o 
 
 NPROC := 8
 NG := 8

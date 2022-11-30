@@ -18,7 +18,7 @@ class a2aDistribution {
         MPI_Datatype TYPE_COMPLEX;
         MPI_Comm comm;
 
-        a2aDistribution(MPI_Comm input_comm, int input_Ng);
+        a2aDistribution(MPI_Comm input_comm, int input_Ng, int input_blockSize);
 
         void getZPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
 

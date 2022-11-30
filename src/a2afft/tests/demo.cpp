@@ -25,7 +25,7 @@ int main(int argc, char** argv){
 
     int world_rank; MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-    a2aDistribution dist(MPI_COMM_WORLD,Ng);
+    a2aDistribution dist(MPI_COMM_WORLD,Ng,blockSize);
     a2adfft dfft(dist);
     
     fftPrecision* data = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
@@ -45,7 +45,11 @@ int main(int argc, char** argv){
 
     dfft.make_plans(scratch,d_Buff1,d_Buff2);
 
-    //dfft.forward(data);
+    dfft.forward(data);
+
+    fwrite(data,sizeof(fftPrecision),dist.nlocal*2,out_file);
+
+    dfft.inverse(data);
 
     fwrite(data,sizeof(fftPrecision),dist.nlocal*2,out_file);
 
