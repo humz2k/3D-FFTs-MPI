@@ -57,7 +57,7 @@ def gridID2xyz(idx, Ng):
     return out.tolist()
 
 def check(printStats=False):
-    params = np.fromfile(folder + "/dims.out",dtype=np.int32)
+    params = np.fromfile(folder + "/dims",dtype=np.int32)
 
     nproc = params[0]
     ng = params[1]
@@ -87,5 +87,3 @@ def check(printStats=False):
     inv = stitch(raw_data,dims,ng,local_grid,2)
 
     return np.allclose(np.fft.fftn(inp),out), np.allclose(inp,inv)
-
-print(check())

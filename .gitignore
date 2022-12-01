@@ -47,6 +47,9 @@
 
 proc*
 params
+dims
+
+*.log
 
 # Kernel Module Compile Results
 *.mod*

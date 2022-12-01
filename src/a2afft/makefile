@@ -9,18 +9,21 @@ roomba:
 	mpicxx -c dfft/a2adfft.cpp -o a2adfft.o
 
 	nvcc -c tests/cuda_utils.cu -lineinfo -Xptxas -v -Xcompiler="-fPIC" -arch=sm_53 -shared -o cuda_utils.o
-	mpicxx -c tests/demo.cpp -o demo.o
+	mpicxx -c tests/test.cpp -o temp_test.o
 
-	mpicxx demo.o cuda_utils.o a2adfft.o a2affts.o a2adistribution.o a2apencils.o a2achangefastaxis.o a2acudacopy.o -L/usr/local/cuda/lib64 -lcufft -lcudart -o main.o
+	mpicxx temp_test.o cuda_utils.o a2adfft.o a2affts.o a2adistribution.o a2apencils.o a2achangefastaxis.o a2acudacopy.o -L/usr/local/cuda/lib64 -lcufft -lcudart -o test.o
 
 
 NPROC := 8
 NG := 8
+BLOCKSIZE := 64
 
 run:
-	mpirun -n $(NPROC) ./main.o
+	mpirun -n $(NPROC) ./test.o -Ng $(NG) -blockSize $(BLOCKSIZE)
 
 clean:
 	rm *.o
-	rm *.out
+
+clear_test:
+	rm dims
 	rm proc*
