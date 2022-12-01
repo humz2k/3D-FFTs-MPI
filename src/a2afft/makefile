@@ -27,3 +27,7 @@ clean:
 clear_test:
 	rm dims
 	rm proc*
+
+check_gpu:
+	mpicxx tests/gpu_awareness_check.cpp -o gpu_check.o
+	mpirun ./gpu_check.o

@@ -51,6 +51,8 @@ dims
 
 *.log
 
+*.json
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
