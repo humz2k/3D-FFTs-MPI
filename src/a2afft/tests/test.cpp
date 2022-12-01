@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "../dfft/a2adfft.h"
+#include "../a2a_3D_FFTs.h"
 #include "cuda_utils.h"
 
 void populate_grid(fftPrecision* myGridCells, int nlocal){
