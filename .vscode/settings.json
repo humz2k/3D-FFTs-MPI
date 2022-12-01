@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "type_traits": "c",
-        "change_fast_axis.h": "c",
-        "initializer.h": "c"
-    }
-}
