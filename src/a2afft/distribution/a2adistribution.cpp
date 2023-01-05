@@ -1,4 +1,3 @@
-#define showDims
 #define saveDims
 #define dimsOutputFile "dims"
 
@@ -80,7 +79,7 @@ a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng, int input_bl
     assert(((local_grid_size[0] * local_grid_size[2]) % world_size) == 0);
     assert(((local_grid_size[1] * local_grid_size[2]) % world_size) == 0);
 
-    #ifdef showDims      
+    #ifdef verbose    
     if (world_rank == 0){
         printf("#######\nDISTRIBUTION PARAMETERS\n");
         printf("DIMS [%d,%d,%d]\n",dims[0],dims[1],dims[2]);

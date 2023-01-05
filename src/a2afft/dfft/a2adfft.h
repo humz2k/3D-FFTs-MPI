@@ -1,5 +1,4 @@
 #define fftPrecision double
-#define verbose
 
 #include <stdio.h>
 #include <stdlib.h>

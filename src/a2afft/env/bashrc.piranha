@@ -1,0 +1,10 @@
+export MY_PLATFORM="piranha"
+
+export MY_CUDA_CC="nvcc"
+export MY_MPI_CXX="mpicxx"
+export MY_CUDA_FLAGS="-lineinfo -Xptxas -v -Xcompiler="-fPIC" -arch=sm_53 -shared"
+export MY_MPI_FLAGS=""
+
+export CUDA_LIB_DIR="/usr/local/cuda/lib64"
+
+export MY_MPI_CUDA_FLAGS="-lcufft -lcudart"
