@@ -15,18 +15,16 @@ class a2adfft {
         int blockSize;
         a2aDistribution &distribution;
 
-        fftPrecision* scratch;
-        fftPrecision** d_Buff1;
-        fftPrecision** d_Buff2;
+        fftPrecision** d_scratch;
 
         int plans_made;
 
         a2adfft(a2aDistribution &dist);
 
-        void make_plans(fftPrecision* input_scratch, fftPrecision** input_d_Buff1, fftPrecision** input_d_Buff2);
+        void make_plans(fftPrecision** input_d_scratch);
 
-        void forward(fftPrecision* data);
+        void forward(fftPrecision** d_data);
 
-        void inverse(fftPrecision* data);
+        void inverse(fftPrecision** d_data);
 
 };

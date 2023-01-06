@@ -76,7 +76,7 @@ extern void inverse_1d_fft(fftPrecision** data, int Ng, int nlocal){
     }
 
 __global__
-void scale_fft(fftPrecision* data, int Ng, int nlocal){
+void scale_fft(fftPrecision* __restrict out, const fftPrecision* __restrict data, int Ng, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -84,18 +84,42 @@ void scale_fft(fftPrecision* data, int Ng, int nlocal){
 
     if (idx < nlocal){
 
-        data[idx*2] = data[idx*2] / scale;
-        data[idx*2 + 1] = data[idx*2 + 1] / scale;
+        out[idx*2] = data[idx*2] / scale;
+        out[idx*2 + 1] = data[idx*2 + 1] / scale;
 
     }
 
 }
 
-extern void launch_scale_fft(fftPrecision** data, int Ng, int nlocal, int blockSize){
+__global__
+void fast_copy_fft(fftPrecision* __restrict out, const fftPrecision* __restrict data, int nlocal){
+
+    int idx = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if (idx < nlocal){
+
+        out[idx*2] = data[idx*2];
+        out[idx*2 + 1] = data[idx*2 + 1];
+
+    }
+
+}
+
+extern void launch_scale_fft(fftPrecision** out, fftPrecision** data, int Ng, int nlocal, int blockSize){
 
     int numBlocks = (nlocal + blockSize - 1) / blockSize;
 
-    scale_fft<<<numBlocks,blockSize>>>(data[0],Ng,nlocal);
+    scale_fft<<<numBlocks,blockSize>>>(out[0],data[0],Ng,nlocal);
+
+    cudaDeviceSynchronize();
+
+}
+
+extern void launch_fast_copy_fft(fftPrecision** out, fftPrecision** data, int nlocal, int blockSize){
+
+    int numBlocks = (nlocal + blockSize - 1) / blockSize;
+
+    fast_copy_fft<<<numBlocks,blockSize>>>(out[0],data[0],nlocal);
 
     cudaDeviceSynchronize();
 

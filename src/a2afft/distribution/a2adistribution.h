@@ -18,19 +18,24 @@ class a2aDistribution {
         MPI_Datatype TYPE_COMPLEX;
         MPI_Comm comm;
 
+        #ifndef cudampi
+        fftPrecision* h_scratch1;
+        fftPrecision* h_scratch2;
+        #endif
+
         a2aDistribution(MPI_Comm input_comm, int input_Ng, int input_blockSize);
 
-        void getZPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
+        void getZPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2);
 
-        void returnZPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
+        void returnZPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2);
 
-        void getXPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
+        void getXPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2);
 
-        void returnXPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
+        void returnXPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2);
 
-        void getYPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
+        void getYPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2);
 
-        void returnYPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2);
+        void returnYPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2);
 
         void finalize();
 

@@ -1,7 +1,7 @@
 #include "kernels.h"
 
 __global__
-void d_fast_z_to_x(fftPrecision* source, fftPrecision* dest, int lgridx, int lgridy, int lgridz, int nlocal){
+void d_fast_z_to_x(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int lgridx, int lgridy, int lgridz, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -32,7 +32,7 @@ extern void launch_d_fast_z_to_x(fftPrecision** source, fftPrecision** dest, int
 }
 
 __global__
-void d_fast_x_to_y(fftPrecision* source, fftPrecision* dest, int lgridx, int lgridy, int lgridz, int nlocal){
+void d_fast_x_to_y(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int lgridx, int lgridy, int lgridz, int nlocal){
     
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -63,7 +63,7 @@ extern void launch_d_fast_x_to_y(fftPrecision** source, fftPrecision** dest, int
 }
 
 __global__
-void d_fast_y_to_z(fftPrecision* source, fftPrecision* dest, int lgridx, int lgridy, int lgridz, int nlocal){
+void d_fast_y_to_z(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int lgridx, int lgridy, int lgridz, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 

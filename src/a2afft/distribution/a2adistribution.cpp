@@ -79,6 +79,11 @@ a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng, int input_bl
     assert(((local_grid_size[0] * local_grid_size[2]) % world_size) == 0);
     assert(((local_grid_size[1] * local_grid_size[2]) % world_size) == 0);
 
+    #ifndef cudampi
+    h_scratch1 = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
+    h_scratch2 = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
+    #endif
+
     #ifdef verbose    
     if (world_rank == 0){
         printf("#######\nDISTRIBUTION PARAMETERS\n");
@@ -103,96 +108,113 @@ a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng, int input_bl
 
 }
 
-void a2aDistribution::getZPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2){
+void a2aDistribution::getZPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2){
 
     int nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
 
-    MPI_Alltoall(data,nsends,TYPE_COMPLEX,scratch,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    copy_h2d(d_Buff2,scratch,nlocal);
+    #ifndef cudampi
+    copy_d2h(h_scratch1,d_Buff1,nlocal);
+    MPI_Alltoall(h_scratch1,nsends,TYPE_COMPLEX,h_scratch2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    copy_h2d(d_Buff2,h_scratch2,nlocal);
+    #else
+    MPI_Alltoall(d_Buff1[0],nsends,TYPE_COMPLEX,d_Buff2[0],nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    #endif
 
     launch_d_z_a2a_to_z_pencils(d_Buff2, d_Buff1, blockSize, world_size, nlocal, local_grid_size, dims);
 
 }
 
-void a2aDistribution::returnZPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2){
+void a2aDistribution::returnZPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2){
     
     int nsends = ((local_grid_size[0] * local_grid_size[1])/world_size) * local_grid_size[2];
 
     launch_d_z_pencils_to_z_a2a(d_Buff1, d_Buff2, blockSize, world_size, nlocal, local_grid_size, dims);
 
-    copy_d2h(scratch,d_Buff2,nlocal);
-
-    MPI_Alltoall(scratch,nsends,TYPE_COMPLEX,data,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    #ifndef cudampi
+    copy_d2h(h_scratch1,d_Buff2,nlocal);
+    MPI_Alltoall(h_scratch1,nsends,TYPE_COMPLEX,h_scratch2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    copy_h2d(d_Buff1,h_scratch2,nlocal);
+    #else
+    MPI_Alltoall(d_Buff2[0],nsends,TYPE_COMPLEX,d_Buff1[0],nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    #endif
 
 }
 
-void a2aDistribution::getXPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2){
+void a2aDistribution::getXPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2){
 
     int nsends = ((local_grid_size[2] * local_grid_size[1])/world_size) * local_grid_size[0];
 
-    copy_h2d(d_Buff2, data, nlocal);
+    launch_d_fast_z_to_x(d_Buff1, d_Buff2, local_grid_size, blockSize, nlocal);
 
-    launch_d_fast_z_to_x(d_Buff2, d_Buff1, local_grid_size, blockSize, nlocal);
+    #ifndef cudampi
+    copy_d2h(h_scratch1,d_Buff2,nlocal);
+    MPI_Alltoall(h_scratch1,nsends,TYPE_COMPLEX,h_scratch2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    copy_h2d(d_Buff1, h_scratch2, nlocal);
+    #else
+    MPI_Alltoall(d_Buff2[0],nsends,TYPE_COMPLEX,d_Buff1[0],nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    #endif
 
-    copy_d2h(data,d_Buff1,nlocal);
-
-    MPI_Alltoall(data,nsends,TYPE_COMPLEX,scratch,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    copy_h2d(d_Buff2, scratch, nlocal);
-
-    launch_d_x_a2a_to_x_pencils(d_Buff2,d_Buff1,blockSize,world_size,nlocal,local_grid_size,dims);
+    launch_d_x_a2a_to_x_pencils(d_Buff1,d_Buff2,blockSize,world_size,nlocal,local_grid_size,dims);
 
 }
 
-void a2aDistribution::returnXPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2){
+void a2aDistribution::returnXPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2){
 
     int nsends = ((local_grid_size[2] * local_grid_size[1])/world_size) * local_grid_size[0];
 
-    launch_d_x_pencils_to_x_a2a(d_Buff1, d_Buff2, blockSize, world_size, nlocal, local_grid_size, dims);
+    launch_d_x_pencils_to_x_a2a(d_Buff2, d_Buff1, blockSize, world_size, nlocal, local_grid_size, dims);
 
-    copy_d2h(scratch,d_Buff2,nlocal);
-
-    MPI_Alltoall(scratch,nsends,TYPE_COMPLEX,data,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    #ifndef cudampi
+    copy_d2h(h_scratch1,d_Buff1,nlocal);
+    MPI_Alltoall(h_scratch1,nsends,TYPE_COMPLEX,h_scratch2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    copy_h2d(d_Buff2,h_scratch2,nlocal);
+    #else
+    MPI_Alltoall(d_Buff1[0],nsends,TYPE_COMPLEX,d_Buff2[0],nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    #endif
 
 }
 
-void a2aDistribution::getYPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2){
+void a2aDistribution::getYPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2){
 
     int nsends = ((local_grid_size[2] * local_grid_size[0])/world_size) * local_grid_size[1];
 
-    copy_h2d(d_Buff2, data, nlocal);
-
     launch_d_fast_x_to_y(d_Buff2, d_Buff1, local_grid_size, blockSize, nlocal);
 
-    copy_d2h(data,d_Buff1,nlocal);
-
-    MPI_Alltoall(data,nsends,TYPE_COMPLEX,scratch,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    copy_h2d(d_Buff2, scratch, nlocal);
+    #ifndef cudampi
+    copy_d2h(h_scratch1,d_Buff1,nlocal);
+    MPI_Alltoall(h_scratch1,nsends,TYPE_COMPLEX,h_scratch2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    copy_h2d(d_Buff2, h_scratch2, nlocal);
+    #else
+    MPI_Alltoall(d_Buff1[0],nsends,TYPE_COMPLEX,d_Buff2[0],nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    #endif
 
     launch_d_y_a2a_to_y_pencils(d_Buff2, d_Buff1, blockSize, world_size, nlocal, local_grid_size, dims);
 
 }
 
-void a2aDistribution::returnYPencils(fftPrecision* data, fftPrecision* scratch, fftPrecision** d_Buff1, fftPrecision** d_Buff2){
+void a2aDistribution::returnYPencils(fftPrecision** d_Buff1, fftPrecision** d_Buff2){
 
     int nsends = ((local_grid_size[2] * local_grid_size[0])/world_size) * local_grid_size[1];
 
-    launch_d_y_pencils_to_y_a2a(d_Buff1, d_Buff2, blockSize, world_size, nlocal, local_grid_size, dims);
+    launch_d_y_pencils_to_y_a2a(d_Buff2, d_Buff1, blockSize, world_size, nlocal, local_grid_size, dims);
 
-    copy_d2h(data,d_Buff2,nlocal);
-
-    MPI_Alltoall(data,nsends,TYPE_COMPLEX,scratch,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
-
-    copy_h2d(d_Buff2, scratch, nlocal);
+    #ifndef cudampi
+    copy_d2h(h_scratch1,d_Buff1,nlocal);
+    MPI_Alltoall(h_scratch1,nsends,TYPE_COMPLEX,h_scratch2,nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    copy_h2d(d_Buff2, h_scratch2, nlocal);
+    #else
+    MPI_Alltoall(d_Buff1[0],nsends,TYPE_COMPLEX,d_Buff2[0],nsends,TYPE_COMPLEX,MPI_COMM_WORLD);
+    #endif
 
     launch_d_fast_y_to_z(d_Buff2, d_Buff1, local_grid_size, blockSize, nlocal);
-
-    copy_d2h(data,d_Buff1,nlocal);
 
 }
 
 void a2aDistribution::finalize(){
     MPI_Type_free(&TYPE_COMPLEX);
+    
+    #ifndef cudampi
+    free(h_scratch1);
+    free(h_scratch2);
+    #endif
 }

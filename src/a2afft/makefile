@@ -31,6 +31,7 @@ main:
 NPROC := 8
 NG := 8
 BLOCKSIZE := 64
+RUN := 1
 
 run:
 	mpirun -n $(NPROC) ./test.o -Ng $(NG) -blockSize $(BLOCKSIZE)
@@ -45,3 +46,6 @@ clear_test:
 check_gpu:
 	mpicxx tests/gpu_awareness_check.cpp -o gpu_check.o
 	mpirun ./gpu_check.o
+
+bench:
+	mpirun -n $(NPROC) nvprof --csv --log-file timings/run$(RUN)/new.%q{PMI_RANK}.txt ./test.o -Ng ${NG} -blockSize $(BLOCKSIZE)

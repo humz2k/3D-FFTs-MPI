@@ -1,4 +1,5 @@
 #define fftPrecision double
+#define timing
 
 #include <mpi.h>
 #include <stdio.h>
@@ -48,18 +49,17 @@ int main(int argc, char** argv){
     if (world_rank == 0){printf("Malloc arrays...\n");}
     #endif
 
-    fftPrecision* data = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
-    fftPrecision* scratch = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
+    fftPrecision* temp_data = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
 
-    fftPrecision** d_Buff1 = (fftPrecision**) malloc(sizeof(fftPrecision*));
-    fftPrecision** d_Buff2 = (fftPrecision**) malloc(sizeof(fftPrecision*));
+    fftPrecision** d_data = (fftPrecision**) malloc(sizeof(fftPrecision*));
+    fftPrecision** d_scratch = (fftPrecision**) malloc(sizeof(fftPrecision*));
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0){printf("Finished Malloc arrays\nInitializing cuda...\n");}
     #endif
 
-    initialize_cuda(d_Buff1,d_Buff2,nlocal);
+    initialize_cuda(d_data,d_scratch,nlocal);
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
@@ -74,61 +74,69 @@ int main(int argc, char** argv){
     if (world_rank == 0){printf("Finished creating output files\nPopulating grid...");}
     #endif
 
-    populate_grid(data,nlocal);
+    populate_grid(temp_data,nlocal);
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0){printf("Finished populating grid\nWriting initial data to file...");}
     #endif
 
-    fwrite(data,sizeof(fftPrecision),dist.nlocal*2,out_file);
+    fwrite(temp_data,sizeof(fftPrecision),dist.nlocal*2,out_file);
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0){printf("Finished writing initial data to file\nMaking dfft plans...");}
     #endif
 
-    dfft.make_plans(scratch,d_Buff1,d_Buff2);
+    dfft.make_plans(d_scratch);
+
+    util_copy_h2d(d_data,temp_data,nlocal);
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0){printf("Finished making dfft plans\nCalling dfft.forward()...\n\n");}
     #endif
 
-    dfft.forward(data);
+    dfft.forward(d_data);
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0){printf("\nFinished dfft.forward()\nWriting transformed data to file...\n");}
     #endif
+    
+    util_copy_d2h(temp_data,d_data,nlocal);
 
-    fwrite(data,sizeof(fftPrecision),dist.nlocal*2,out_file);
+    fwrite(temp_data,sizeof(fftPrecision),dist.nlocal*2,out_file);
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0){printf("Finished writing transformed data to file\nCalling dfft.inverse()...\n\n");}
     #endif
 
-    dfft.inverse(data);
+    dfft.inverse(d_data);
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0){printf("\nFinished dfft.inverse()\nWriting inverse transformed data to file...\n");}
     #endif
 
-    fwrite(data,sizeof(fftPrecision),dist.nlocal*2,out_file);
+    util_copy_d2h(temp_data,d_data,nlocal);
+
+    fwrite(temp_data,sizeof(fftPrecision),dist.nlocal*2,out_file);
 
     #ifdef verbose
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0){printf("Finished writing inverse transformed data to file\nFinalizing...\n");}
     #endif
+    
 
     fclose(out_file);
-    free(data);
-    free(scratch);
-    finalize_cuda(d_Buff1,d_Buff2);
-    free(d_Buff1);
-    free(d_Buff2);
+    free(temp_data);
+    
+    finalize_cuda(d_data,d_scratch);
+    free(d_data);
+    free(d_scratch);
+
     dist.finalize();
     MPI_Finalize();
 

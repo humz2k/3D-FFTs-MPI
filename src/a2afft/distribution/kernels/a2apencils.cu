@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 __global__
-void d_z_a2a_to_z_pencils(fftPrecision* source, fftPrecision* dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int nlocal){
+void d_z_a2a_to_z_pencils(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -35,7 +35,7 @@ extern void launch_d_z_a2a_to_z_pencils(fftPrecision** source, fftPrecision** de
 }
 
 __global__
-void d_z_pencils_to_z_a2a(fftPrecision* source, fftPrecision* dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int nlocal){
+void d_z_pencils_to_z_a2a(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -71,7 +71,7 @@ extern void launch_d_z_pencils_to_z_a2a(fftPrecision** source, fftPrecision** de
 }
 
 __global__ 
-void d_x_a2a_to_x_pencils(fftPrecision* source, fftPrecision* dest, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int n_cells_per_stack, int nlocal){
+void d_x_a2a_to_x_pencils(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int n_cells_per_stack, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -108,7 +108,7 @@ extern void launch_d_x_a2a_to_x_pencils(fftPrecision** source, fftPrecision** de
 }
 
 __global__
-void d_x_pencils_to_x_a2a(fftPrecision* source, fftPrecision* dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int n_cells_per_stack, int nlocal){
+void d_x_pencils_to_x_a2a(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int n_cells_per_stack, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -146,7 +146,7 @@ extern void launch_d_x_pencils_to_x_a2a(fftPrecision** source, fftPrecision** de
 }
 
 __global__
-void d_y_a2a_to_y_pencils(fftPrecision* source, fftPrecision* dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int n_ranks_per_tower, int nlocal){
+void d_y_a2a_to_y_pencils(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int n_ranks_per_tower, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -186,7 +186,7 @@ extern void launch_d_y_a2a_to_y_pencils(fftPrecision** source, fftPrecision** de
 }
 
 __global__
-void d_y_pencils_to_y_a2a(fftPrecision* source, fftPrecision* dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int n_ranks_per_tower, int nlocal){
+void d_y_pencils_to_y_a2a(const fftPrecision* __restrict source, fftPrecision* __restrict dest, int n_cells_per_rank, int n_cells_mini_pencils, int n_mini_pencils_per_rank, int n_mini_pencils_stacked, int n_ranks_per_tower, int nlocal){
 
     int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
