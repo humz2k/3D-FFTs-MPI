@@ -1,0 +1,12 @@
+#!/bin/bash
+# Begin LSF Directives
+#BSUB -P HEP114
+#BSUB -W 0:05
+#BSUB -nnodes 2
+#BSUB -o test.o%J
+#BSUB -o test.o%J
+#BSUB -J ffttest
+
+source $HOME/3D-FFTs-MPI/src/a2afft/env/bashrc.summit
+
+jsrun -n8 -a1 -c1 -g1 -r4 $HOME/3D-FFTs-MPI/src/a2afft/test.o -Ng 8 -blockSize 64

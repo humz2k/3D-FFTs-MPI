@@ -1,7 +1,7 @@
 export MY_PLATFORM="summit"
 
-module load gcc/9.1.0
-module load cuda/11.0.3
+module load gcc
+module load cuda
 
 export MY_CUDA_CC="nvcc"
 export MY_MPI_CXX="mpic++"
