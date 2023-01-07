@@ -84,7 +84,12 @@ a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng, int input_bl
     h_scratch2 = (fftPrecision*) malloc(nlocal * sizeof(fftPrecision) * 2);
     #endif
 
-    #ifdef verbose    
+    #ifdef verbose
+
+    #ifdef cudampi
+    printf("USING CUDA-AWARE MPI\n");
+    #endif
+
     if (world_rank == 0){
         printf("#######\nDISTRIBUTION PARAMETERS\n");
         printf("DIMS [%d,%d,%d]\n",dims[0],dims[1],dims[2]);
