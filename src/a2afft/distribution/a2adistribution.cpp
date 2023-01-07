@@ -86,11 +86,10 @@ a2aDistribution::a2aDistribution(MPI_Comm input_comm, int input_Ng, int input_bl
 
     #ifdef verbose
 
-    #ifdef cudampi
-    printf("USING CUDA-AWARE MPI\n");
-    #endif
-
     if (world_rank == 0){
+        #ifdef cudampi
+        printf("USING CUDA-AWARE MPI\n");
+        #endif
         printf("#######\nDISTRIBUTION PARAMETERS\n");
         printf("DIMS [%d,%d,%d]\n",dims[0],dims[1],dims[2]);
         printf("LOCAL_GRID_SIZE [%d,%d,%d]\n",local_grid_size[0],local_grid_size[1],local_grid_size[2]);
