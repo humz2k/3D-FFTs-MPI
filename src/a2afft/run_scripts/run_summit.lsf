@@ -9,4 +9,4 @@
 
 source $HOME/3D-FFTs-MPI/src/a2afft/env/bashrc.summit
 
-jsrun -n8 -a1 -c1 -g1 -r4 $HOME/3D-FFTs-MPI/src/a2afft/test.o -Ng 8 -blockSize 64
+jsrun --smpiargs="-gpu" -n8 -a1 -c1 -g1 -r4 $HOME/3D-FFTs-MPI/src/a2afft/test.o -Ng 8 -blockSize 64
