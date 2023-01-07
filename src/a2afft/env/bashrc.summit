@@ -8,6 +8,8 @@ export MY_MPI_CXX="mpic++"
 export MY_CUDA_FLAGS="-I/sw/summit/spectrum_mpi/10.1.0.2-20161130/include/ -Xcompiler -O3,-g -gencode arch=compute_70,code=sm_70"
 export MY_MPI_FLAGS=""
 
+export IS_CUDA_MPI="TRUE"
+
 export CUDA_LIB_DIR="/sw/summit/cuda/11.0.3/lib64"
 
 export MY_MPI_CUDA_FLAGS="-lcufft -lcudart"

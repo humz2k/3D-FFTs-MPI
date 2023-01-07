@@ -55,6 +55,8 @@ dims
 
 *.pyc
 
+src/a2afft/timings
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd

@@ -5,6 +5,13 @@ MY_CUDA_FLAGS ?= -lineinfo -Xptxas -v -Xcompiler="-fPIC" -arch=sm_53 -shared
 MY_MPI_FLAGS ?=
 CUDA_LIB_DIR ?= /usr/local/cuda/lib64
 
+IS_CUDA_MPI ?= FALSE
+ifeq ($(IS_CUDA_MPI),TRUE)
+CUDA_MPI_FLAG = -Dcudampi
+else
+CUDA_MPI_FLAG =
+endif
+
 VERBOSE ?= FALSE
 ifeq ($(VERBOSE),TRUE)
 IS_VERBOSE = -Dverbose
@@ -17,7 +24,7 @@ main:
 	$(MY_CUDA_CC) -c distribution/kernels/a2acudacopy.cu $(MY_CUDA_FLAGS) -o a2acudacopy.o
 	$(MY_CUDA_CC) -c distribution/kernels/a2achangefastaxis.cu $(MY_CUDA_FLAGS) -o a2achangefastaxis.o
 	$(MY_CUDA_CC) -c distribution/kernels/a2apencils.cu $(MY_CUDA_FLAGS) -o a2apencils.o
-	$(MY_MPI_CXX) -c distribution/a2adistribution.cpp $(MY_MPI_FLAGS) $(IS_VERBOSE) -o a2adistribution.o
+	$(MY_MPI_CXX) -c distribution/a2adistribution.cpp $(CUDA_MPI_FLAG) $(MY_MPI_FLAGS) $(IS_VERBOSE) -o a2adistribution.o
 
 	$(MY_CUDA_CC) -c dfft/kernels/a2affts.cu $(MY_CUDA_FLAGS) -o a2affts.o
 	$(MY_MPI_CXX) -c dfft/a2adfft.cpp $(MY_MPI_FLAGS) $(IS_VERBOSE) -o a2adfft.o
